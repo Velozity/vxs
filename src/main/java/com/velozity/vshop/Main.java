@@ -13,8 +13,10 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,6 +29,8 @@ public class Main extends JavaPlugin {
     private static Chat chat = null;
 
     private final FileIO fileio = new FileIO();
+    private final ShopGUI shopgui = new ShopGUI();
+
     @Override
     public void onDisable() {
         log.info(String.format("[%s] Disabled Version %s", getDescription().getName(), getDescription().getVersion()));
@@ -34,6 +38,8 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        getServer().getPluginManager().registerEvents(new ShopGUI(), this);
+
         if (!setupEconomy() ) {
             log.severe(String.format("[%s] - Disabled due to no Vault dependency found!", getDescription().getName()));
             getServer().getPluginManager().disablePlugin(this);
@@ -97,6 +103,10 @@ public class Main extends JavaPlugin {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+            }
+
+            if (args[0].equals("openshop")) {
+                shopgui.openShopGUI(Material.APPLE, (HumanEntity)player, "Apple", "A very nice apple");
             }
         }
 

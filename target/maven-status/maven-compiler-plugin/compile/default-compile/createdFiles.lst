@@ -1,2 +1,3 @@
-com\velozity\vshop\Main.class
 com\velozity\helpers\FileIO.class
+com\velozity\vshop\Main.class
+com\xorist\vshop\ShopGUI.class
