@@ -34,8 +34,10 @@ public class ShopGUI implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        log.info("Hit Inventory Click1");
-        if(e.getInventory().getHolder() != null) {
+        int slotClicked = e.getRawSlot();
+        Inventory inv = e.getInventory();
+
+        if(inv.getHolder() != null) {
             return;
         }
 
@@ -48,7 +50,40 @@ public class ShopGUI implements Listener {
 
         final Player p = (Player) e.getWhoClicked();
 
-        p.sendMessage("You clicked at slot " + e.getRawSlot());
+        if(slotClicked == 4) {
+            //buyItem();
+            int buyAmount = inv.getItem(slotClicked).getAmount();
+            log.info("Buying: " + String.valueOf(buyAmount));
+        }
+
+        if(slotClicked < 4) {
+            subtractItems(inv, slotClicked);
+        }
+
+        if((slotClicked > 4) && (slotClicked < 9)) {
+            addItems(inv, slotClicked);
+        }
+    }
+
+    public void addItems(Inventory inv, int slotClicked) {
+        int addAmount = inv.getItem(slotClicked).getAmount();
+        int currentAmount = inv.getItem(4).getAmount();
+        int maxStack = inv.getItem(4).getMaxStackSize();
+        if((addAmount + currentAmount) > maxStack) {
+            inv.getItem(4).setAmount(64);
+        } else {
+            inv.getItem(4).setAmount(inv.getItem(4).getAmount() + addAmount);
+        }
+    }
+
+    public void subtractItems(Inventory inv, int slotClicked) {
+        int subAmount = inv.getItem(slotClicked).getAmount();
+        int currentAmount = inv.getItem(4).getAmount();
+        if((currentAmount - subAmount) < 1) {
+            inv.getItem(4).setAmount(1);
+        } else {
+            inv.getItem(4).setAmount(inv.getItem(4).getAmount() - subAmount);
+        }
     }
 
     @EventHandler
@@ -64,7 +99,42 @@ public class ShopGUI implements Listener {
 
     public Inventory createInventory(Material material, String name, String lore) {
         Inventory inv = Bukkit.createInventory(null, 18, "Shop");
-        inv.addItem(createGuiItem(material, name, lore));
+
+        ItemStack toBuy = new ItemStack(material);
+
+        ItemStack Operators = new ItemStack(Material.APPLE);
+        ItemMeta operatorsMeta = Operators.getItemMeta();
+
+        Operators.setAmount(64);
+        operatorsMeta.setDisplayName("SUBTRACT 64");
+        Operators.setItemMeta(operatorsMeta);
+        inv.setItem(0, Operators);
+
+        Operators.setAmount(8);
+        operatorsMeta.setDisplayName("SUBTRACT 8");
+        Operators.setItemMeta(operatorsMeta);
+        inv.setItem(1, Operators);
+
+        Operators.setAmount(1);
+        operatorsMeta.setDisplayName("SUBTRACT 1");
+        Operators.setItemMeta(operatorsMeta);
+        inv.setItem(2, Operators);
+
+        inv.setItem(4, toBuy);
+
+        operatorsMeta.setDisplayName("ADD 1");
+        Operators.setItemMeta(operatorsMeta);
+        inv.setItem(6, Operators);
+
+        Operators.setAmount(8);
+        operatorsMeta.setDisplayName("ADD 8");
+        Operators.setItemMeta(operatorsMeta);
+        inv.setItem(7, Operators);
+
+        Operators.setAmount(64);
+        operatorsMeta.setDisplayName("ADD 64");
+        Operators.setItemMeta(operatorsMeta);
+        inv.setItem(8, Operators);
         return inv;
     }
 }
