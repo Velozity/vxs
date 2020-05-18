@@ -102,39 +102,50 @@ public class ShopGUI implements Listener {
 
         ItemStack toBuy = new ItemStack(material);
 
-        ItemStack Operators = new ItemStack(Material.APPLE);
-        ItemMeta operatorsMeta = Operators.getItemMeta();
+        ItemStack addOperator = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+        ItemMeta addOperatorMeta = addOperator.getItemMeta();
 
-        Operators.setAmount(64);
-        operatorsMeta.setDisplayName("SUBTRACT 64");
-        Operators.setItemMeta(operatorsMeta);
-        inv.setItem(0, Operators);
+        ItemStack subOperator = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+        ItemMeta subOperatorMeta = subOperator.getItemMeta();
 
-        Operators.setAmount(8);
-        operatorsMeta.setDisplayName("SUBTRACT 8");
-        Operators.setItemMeta(operatorsMeta);
-        inv.setItem(1, Operators);
+        if(material.getMaxStackSize() > 7) {
+            subOperator.setAmount(material.getMaxStackSize());
+            String subOperatorName = "SUBTRACT " + String.valueOf(material.getMaxStackSize());
+            subOperatorMeta.setDisplayName(subOperatorName);
+            subOperator.setItemMeta(subOperatorMeta);
+            inv.setItem(0, subOperator);
 
-        Operators.setAmount(1);
-        operatorsMeta.setDisplayName("SUBTRACT 1");
-        Operators.setItemMeta(operatorsMeta);
-        inv.setItem(2, Operators);
+            subOperator.setAmount(material.getMaxStackSize() / 4);
+            subOperatorName = "SUBTRACT " + String.valueOf(material.getMaxStackSize() / 4);
+            subOperatorMeta.setDisplayName(subOperatorName);
+            subOperator.setItemMeta(subOperatorMeta);
+            inv.setItem(1, subOperator);
+
+            addOperator.setAmount(material.getMaxStackSize() / 4);
+            String addOperatorName = "ADD " + String.valueOf(material.getMaxStackSize() / 4);
+            addOperatorMeta.setDisplayName(addOperatorName);
+            addOperator.setItemMeta(addOperatorMeta);
+            inv.setItem(7, addOperator);
+
+            addOperator.setAmount(material.getMaxStackSize());
+            addOperatorName = "ADD " + String.valueOf(material.getMaxStackSize());
+            addOperatorMeta.setDisplayName(addOperatorName);
+            addOperator.setItemMeta(addOperatorMeta);
+            inv.setItem(8, addOperator);
+        }
+
+        subOperator.setAmount(1);
+        subOperatorMeta.setDisplayName("SUBTRACT 1");
+        subOperator.setItemMeta(subOperatorMeta);
+        inv.setItem(2, subOperator);
 
         inv.setItem(4, toBuy);
 
-        operatorsMeta.setDisplayName("ADD 1");
-        Operators.setItemMeta(operatorsMeta);
-        inv.setItem(6, Operators);
+        addOperator.setAmount(1);
+        addOperatorMeta.setDisplayName("ADD 1");
+        addOperator.setItemMeta(addOperatorMeta);
+        inv.setItem(6, addOperator);
 
-        Operators.setAmount(8);
-        operatorsMeta.setDisplayName("ADD 8");
-        Operators.setItemMeta(operatorsMeta);
-        inv.setItem(7, Operators);
-
-        Operators.setAmount(64);
-        operatorsMeta.setDisplayName("ADD 64");
-        Operators.setItemMeta(operatorsMeta);
-        inv.setItem(8, Operators);
         return inv;
     }
 }
