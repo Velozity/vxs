@@ -1,6 +1,7 @@
 package com.velozity.vshop;
 
 import com.velozity.helpers.FileIO;
+import com.xorist.vshop.ShopGUI;
 
 import java.io.IOException;
 import java.util.HashMap;
