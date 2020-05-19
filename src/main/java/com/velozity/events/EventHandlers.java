@@ -48,7 +48,7 @@ public class EventHandlers implements Listener {
             if(signIds.contains(String.valueOf(signId)) && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
                 Shop shop = Global.shopConfig.getShops().get(signId.toString());
 
-                Global.shopgui.openShopGUI(Material.getMaterial(shop.itemid), e.getPlayer(), shop.title, "");
+                Global.shopgui.openShopGUI(Material.getMaterial(shop.itemid), e.getPlayer(), e.getBlock().hashCode(), shop.title, shop.lore, shop.buyprice, shop.sellprice);
                 e.setCancelled(true);
                 return;
             }
@@ -78,9 +78,27 @@ public class EventHandlers implements Listener {
                         e.setCancelled(true);
                         return;
                     }
+                    String line3 = ws.getLine(2);
+                    String line4 = ws.getLine(3);
+                    if(line3.isEmpty() && line4.isEmpty()) {
+                        Global.interact.msgPlayer("You must specify either a buy or sell price", e.getPlayer());
+                        e.setCancelled(true);
+                        return;
+                    }
+
                     Material item = e.getPlayer().getInventory().getItemInMainHand().getType();
 
-                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + WordUtils.capitalizeFully(item.toString().replace("_", " ")), item.toString(), Collections.emptyList(), 80, 14, true, true));
+                    boolean buyable = true;
+                    boolean sellable = true;
+                    if(Global.parser.signPrice(line3).equals(-1)) {
+                        buyable = false;
+                    }
+
+                    if(Global.parser.signPrice(line4).equals(-1)) {
+                        sellable = false;
+                    }
+
+                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + WordUtils.capitalizeFully(item.toString().replace("_", " ")), item.toString(), Collections.emptyList(), Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable));
                     Global.interact.msgPlayer("Sign armed and shop ready", e.getPlayer());
                     Global.armedSigns.add(signId);
 
