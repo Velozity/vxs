@@ -138,7 +138,7 @@ public class Main extends JavaPlugin {
                 lore.add("A very nice apple");
                 signID.add("-12345678");
 
-                shopgui.openShopGUI(Material.APPLE, (HumanEntity)player, "Apple", lore, "Shop", 10, 10, signID);
+                shopgui.openShopGUI(Material.APPLE, player, signID, "Shop", lore, 10, 10);
             }
         }
 
