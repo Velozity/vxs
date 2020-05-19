@@ -138,11 +138,11 @@ public class ShopGUI implements Listener {
         }
     }
 
-    public void openShopGUI(Material material, HumanEntity player, String name, List<String> lore, String title, int buyPrice, int sellPrice, List<String> signID) {
-            player.openInventory(createInventory(material, name, lore, title, buyPrice, sellPrice, player, signID));
+    public void openShopGUI(Material material, HumanEntity player, List<String> signID, String title, List<String> lore, int buyPrice, int sellPrice) {
+            player.openInventory(createInventory(material, player, signID, title, lore, buyPrice, sellPrice));
     }
 
-    public Inventory createInventory(Material material, String name, List<String> lore, String title, int buyPrice, int sellPrice, HumanEntity player, List<String> signID) {
+    public Inventory createInventory(Material material,  HumanEntity player,  List<String> signID, String title, List<String> lore, int buyPrice, int sellPrice) {
 
         Inventory inv;
 
