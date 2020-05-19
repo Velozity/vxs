@@ -131,8 +131,14 @@ public class Main extends JavaPlugin {
                 }
             }
 
-            if (args[0].equals("openshop")) {
-                shopgui.openShopGUI(Material.APPLE, player, "Apple", "A very nice apple");
+            if (args[0].equals("open")) {
+                List<String> lore = new ArrayList<String>();
+                List<String> signID = new ArrayList<String>();
+
+                lore.add("A very nice apple");
+                signID.add("-12345678");
+
+                shopgui.openShopGUI(Material.APPLE, (HumanEntity) player, "Apple", lore, "Shop", 10, 10, signID);
             }
         }
 
