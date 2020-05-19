@@ -1,5 +1,13 @@
 package com.xorist.vshop;
 
+import com.velozity.configs.MainConfig;
+import com.velozity.configs.ShopConfig;
+import com.velozity.events.EventHandlers;
+import com.velozity.helpers.Interactions;
+import com.velozity.types.Shop;
+import com.velozity.vshop.Global;
+import com.xorist.vshop.ShopGUI;
+
 import java.util.Arrays;
 import java.util.logging.Logger;
 
@@ -20,7 +28,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 public class ShopGUI implements Listener {
 
-    private static final Logger log = Logger.getLogger("Minecraft");
+    Interactions interact = Global.interact;
+    Logger log = Global.log;
 
     protected ItemStack createGuiItem(final Material material, final String name, final String lore) {
         log.info("CreateGUIItem");
