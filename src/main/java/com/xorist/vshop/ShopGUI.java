@@ -37,7 +37,7 @@ public class ShopGUI implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryDragEvent e) {
         if(e.getInventory().getHolder() != null)
-        e.setCancelled(true);
+            e.setCancelled(true);
     }
 
     @EventHandler
