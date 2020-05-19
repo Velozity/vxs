@@ -65,7 +65,17 @@ public class Main extends JavaPlugin {
             e.printStackTrace();
         }
 
+        setupSigns();
 
+    }
+
+    private boolean setupSigns() {
+        Map<String, Shop> shops = shopConfig.getShops();
+
+        shops.forEach((key, shop) -> {
+
+        });
+        return true;
     }
 
     private boolean setupEconomy() {
@@ -103,14 +113,6 @@ public class Main extends JavaPlugin {
         if(command.getLabel().equals("vshop") || command.getLabel().equals("vs")) {
             if (args[0].equals("get")) {
                 Global.shopConfig.getShops();
-            }
-
-            if (args[0].equals("write")) {
-                try {
-                    shopConfig.writeShop("5000", new Shop("Awesome shop", "REDSTONE",Collections.emptyList(), 50, 10, true, true));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
 
             if (args[0].equals("editmode")) {
