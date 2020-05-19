@@ -1,9 +1,0 @@
-name: VShop
-main: com.velozity.vshop.Main
-version: 1.0
-author: Velozity
-
-commands:
-  vshop:
-    description: Commands for VShop
-    aliases: vs
