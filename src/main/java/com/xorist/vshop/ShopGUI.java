@@ -3,6 +3,8 @@ package com.xorist.vshop;
 import java.util.Arrays;
 import java.util.logging.Logger;
 
+import com.velozity.vshop.Main;
+import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -33,35 +35,54 @@ public class ShopGUI implements Listener {
     }
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) {
-        int slotClicked = e.getRawSlot();
-        Inventory inv = e.getInventory();
-
-        if(inv.getHolder() != null) {
-            return;
-        }
-
+    public void onInventoryClick(InventoryDragEvent e) {
+        if(e.getInventory().getHolder() != null)
         e.setCancelled(true);
-        final ItemStack clickedItem = e.getCurrentItem();
+    }
 
-        if(clickedItem == null || clickedItem.getType() == Material.AIR) {
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent e) {
+        if(e.getInventory().getHolder() != null) {
             return;
         }
-
-        final Player p = (Player) e.getWhoClicked();
-
-        if(slotClicked == 4) {
-            //buyItem();
-            int buyAmount = inv.getItem(slotClicked).getAmount();
-            log.info("Buying: " + String.valueOf(buyAmount));
+        if(e.isShiftClick()) {
+            e.setCancelled(true);
         }
 
-        if(slotClicked < 4) {
-            subtractItems(inv, slotClicked);
+        // debugging prints
+        log.info("Get Cursor: " + String.valueOf(e.getCursor().getType()));
+
+        Inventory inventory = e.getInventory();
+        int clickedItemSlot = e.getRawSlot();
+        log.info(String.valueOf(clickedItemSlot));
+        Player player = (Player) e.getWhoClicked();
+        ItemStack cursorItem = new ItemStack(Material.AIR);
+        ItemStack clickedItem = new ItemStack(Material.AIR);
+
+        if(e.getCursor() == null) {
+            log.info("cursor is null");
+        } else {
+            log.info("Cursor: " + String.valueOf(e.getCursor().getType()));
+            cursorItem = e.getCursor();
         }
 
-        if((slotClicked > 4) && (slotClicked < 9)) {
-            addItems(inv, slotClicked);
+        if(e.getCurrentItem() == null) {
+            log.info("current item is null");
+        } else {
+            log.info("Current Item: " + String.valueOf(e.getCurrentItem().getType()));
+            clickedItem = e.getCurrentItem();
+        }
+
+        if(clickedItemSlot >= 0 && clickedItemSlot <= 2) {
+            log.info("1");
+            e.setCancelled(true);
+            subtractItems(inventory, clickedItemSlot);
+        } else if(clickedItemSlot >= 6 && clickedItemSlot <= 8) {
+            log.info("2");
+            e.setCancelled(true);
+            addItems(inventory, clickedItemSlot);
+        } else if(clickedItemSlot < 18) {
+            e.setCancelled(true);
         }
     }
 
@@ -83,13 +104,6 @@ public class ShopGUI implements Listener {
             inv.getItem(4).setAmount(1);
         } else {
             inv.getItem(4).setAmount(inv.getItem(4).getAmount() - subAmount);
-        }
-    }
-
-    @EventHandler
-    public void onInventoryClick(final InventoryDragEvent e) {
-        if(e.getInventory().getHolder() == null) {
-            e.setCancelled(true);
         }
     }
 

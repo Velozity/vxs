@@ -24,7 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin {
 
     private static final Logger log = Logger.getLogger("Minecraft");
-    private static Economy econ = null;
+    public static Economy econ = null;
     private static Permission perms = null;
     private static Chat chat = null;
 
