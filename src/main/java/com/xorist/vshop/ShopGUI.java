@@ -54,18 +54,6 @@ public class ShopGUI implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if(e.getInventory().getHolder() != null) {
-            return;
-        }
-        if(e.isShiftClick()) {
-            e.setCancelled(true);
-        }
-        if (e.getClick() == ClickType.DOUBLE_CLICK) {
-            e.setCancelled(true);
-        }
-
-        // debugging prints
-        log.info("Get Cursor: " + String.valueOf(e.getCursor().getType()));
 
         Inventory inventory = e.getInventory();
         int clickedItemSlot = e.getRawSlot();
@@ -74,40 +62,50 @@ public class ShopGUI implements Listener {
         ItemStack cursorItem = new ItemStack(Material.AIR);
         ItemStack clickedItem = new ItemStack(Material.AIR);
 
-        if(e.getCursor() == null) {
-            log.info("cursor is null");
-        } else {
-            log.info("Cursor: " + String.valueOf(e.getCursor().getType()));
+        if(e.getInventory().getHolder() != null) {
+            return;
+        }
+
+        if((clickedItemSlot < 18 && !Global.editModeEnabled.contains(player.getUniqueId())) || (clickedItemSlot < 27 && Global.editModeEnabled.contains(player.getUniqueId())) || e.isShiftClick() || (e.getClick() == ClickType.DOUBLE_CLICK)) {
+            e.setCancelled(true);
+        }
+
+        if(e.isShiftClick()) {
+            //e.setCancelled(true);
+        }
+        if (e.getClick() == ClickType.DOUBLE_CLICK) {
+            //e.setCancelled(true);
+        }
+
+        if(e.getCursor() != null) {
             cursorItem = e.getCursor();
         }
 
-        if(e.getCurrentItem() == null) {
-            log.info("current item is null");
-        } else {
-            log.info("Current Item: " + String.valueOf(e.getCurrentItem().getType()));
+        if(e.getCurrentItem() != null) {
             clickedItem = e.getCurrentItem();
         }
 
         if(clickedItemSlot >= 0 && clickedItemSlot <= 2) {
-            log.info("subtracting..");
-            e.setCancelled(true);
             subtractItems(inventory, clickedItemSlot);
         } else if(clickedItemSlot >= 6 && clickedItemSlot <= 8) {
-            log.info("adding..");
-            e.setCancelled(true);
             addItems(inventory, clickedItemSlot);
+        } else if(clickedItemSlot == 12) {
+            // buy item
+            log.info("Buying item!");
+        } else if(clickedItemSlot == 13) {
+            // sell item
+            log.info("Selling item!");
+        } else if(clickedItemSlot == 14) {
+            // sell all items
+            log.info("Selling all items!");
         } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot == 18) {
-            e.setCancelled(true);
             disableBuyItems();
             log.info(String.valueOf(clickedItem.getItemMeta().getLore()));
         } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot == 26) {
-            e.setCancelled(true);
             disableSellItems();
             log.info(String.valueOf(clickedItem.getItemMeta().getLore()));
         } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot < 27) {
-            e.setCancelled(true);
         } else if(clickedItemSlot < 18) {
-            e.setCancelled(true);
         }
     }
 
