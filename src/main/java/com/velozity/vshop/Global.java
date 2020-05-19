@@ -3,6 +3,7 @@ package com.velozity.vshop;
 import com.velozity.configs.MainConfig;
 import com.velozity.configs.ShopConfig;
 import com.velozity.helpers.Interactions;
+import com.velozity.helpers.Parsers;
 import com.xorist.vshop.ShopGUI;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
@@ -24,6 +25,7 @@ public class Global {
     public static final ShopConfig shopConfig = new ShopConfig();
     public static final ShopGUI shopgui = new ShopGUI();
     public static final Interactions interact = new Interactions();
+    public static final Parsers parser = new Parsers();
 
     public static List<UUID> editModeEnabled = new ArrayList<>();
     public static List<Integer> armedSigns = new ArrayList<>();

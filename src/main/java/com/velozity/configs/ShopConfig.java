@@ -65,6 +65,20 @@ public class ShopConfig {
 
         return getShopsConfig().getConfigurationSection("shops").getKeys(false);
     }
+
+    public Shop getShop(String signId) {
+        Shop shop = new Shop();
+        shop.title = getShopsConfig().getConfigurationSection("shops." + signId).getString("title");
+        shop.itemid = getShopsConfig().getConfigurationSection("shops." + signId).getString("itemid");
+        shop.lore = (List<String>)getShopsConfig().getConfigurationSection("shops." + signId).getList("lore");
+        shop.buyprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("buyprice");
+        shop.sellprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("sellprice");
+        shop.buyable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("buyable");
+        shop.sellable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("sellable");
+
+        return shop;
+    }
+
     public Map<String, Shop> getShops() {
         try {
             shopsConfig.load(shopsConfigFile);
