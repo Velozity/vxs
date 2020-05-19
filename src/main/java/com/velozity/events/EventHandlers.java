@@ -8,17 +8,18 @@ import com.velozity.configs.MainConfig;
 import com.velozity.configs.ShopConfig;
 
 import com.xorist.vshop.ShopGUI;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class EventHandlers implements Listener {
@@ -29,7 +30,7 @@ public class EventHandlers implements Listener {
     public void onSignChange(SignChangeEvent e) {
         if (e.getPlayer().hasPermission("vshop.createshop")) {
             if(e.getLine(0).toLowerCase().equals("[shop]")) {
-                e.setLine(0, "[shop]");
+                e.setLine(0, "[Shop]");
             }
         }
     }
@@ -38,13 +39,23 @@ public class EventHandlers implements Listener {
     public void onBlockBreak(BlockBreakEvent e) throws IOException {
 
         if (e.getBlock().getType().equals(Material.SIGN) || e.getBlock().getType().equals(Material.WALL_SIGN) || e.getBlock().getType().equals(Material.LEGACY_SIGN_POST)) {
-
-            if(Global.editModeEnabled.isEmpty()) { return; }
+            org.bukkit.block.Sign ws = (org.bukkit.block.Sign)e.getBlock().getState();
             Integer signId = e.getBlock().hashCode();
+
+            Set<String> signIds = Global.shopConfig.getSignIds();
+
+            // If sign being hit is in a registered sign shop & its a normal user
+            if(signIds.contains(String.valueOf(signId)) && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
+                Shop shop = Global.shopConfig.getShops().get(signId.toString());
+
+                Global.shopgui.openShopGUI(Material.getMaterial(shop.itemid), e.getPlayer(), shop.title, "");
+                e.setCancelled(true);
+                return;
+            }
 
             // If in editmode
             if(Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
-                org.bukkit.block.Sign ws = (org.bukkit.block.Sign)e.getBlock().getState();
+
                 // If its a shop sign
                 if(ws.getLine(0).toLowerCase().equals("[shop]")) {
                     // If the sign is already armed
@@ -67,8 +78,9 @@ public class EventHandlers implements Listener {
                         e.setCancelled(true);
                         return;
                     }
+                    Material item = e.getPlayer().getInventory().getItemInMainHand().getType();
 
-                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Wow so cool!", "PENIS", Collections.emptyList(), 80, 14, true, true));
+                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + WordUtils.capitalizeFully(item.toString().replace("_", " ")), item.toString(), Collections.emptyList(), 80, 14, true, true));
                     Global.interact.msgPlayer("Sign armed and shop ready", e.getPlayer());
                     Global.armedSigns.add(signId);
 

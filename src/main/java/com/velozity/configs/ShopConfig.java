@@ -52,6 +52,19 @@ public class ShopConfig {
         getShopsConfig().save(shopsConfigFile);
     }
 
+    public Set<String> getSignIds() {
+        try {
+            shopsConfig.load(shopsConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
+
+        if(getShopsConfig().saveToString().trim().equals("")) {
+            return Collections.emptySet();
+        }
+
+        return getShopsConfig().getConfigurationSection("shops").getKeys(false);
+    }
     public Map<String, Shop> getShops() {
         try {
             shopsConfig.load(shopsConfigFile);
@@ -70,7 +83,6 @@ public class ShopConfig {
             shop.sellprice = getShopsConfig().getConfigurationSection("shops." + key).getInt("sellprice");
             shop.buyable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("buyable");
             shop.sellable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("sellable");
-
             shops.put(key, shop);
         }
 
