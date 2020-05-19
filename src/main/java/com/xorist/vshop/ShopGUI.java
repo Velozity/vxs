@@ -138,13 +138,16 @@ public class ShopGUI implements Listener {
         }
     }
 
-    public void openShopGUI(Material material, HumanEntity player, List<String> signID, String title, List<String> lore, int buyPrice, int sellPrice) {
+    public void openShopGUI(Material material, HumanEntity player, String signID, String title, List<String> lore, int buyPrice, int sellPrice) {
             player.openInventory(createInventory(material, player, signID, title, lore, buyPrice, sellPrice));
     }
 
-    public Inventory createInventory(Material material,  HumanEntity player,  List<String> signID, String title, List<String> lore, int buyPrice, int sellPrice) {
+    public Inventory createInventory(Material material,  HumanEntity player,  String signID, String title, List<String> lore, int buyPrice, int sellPrice) {
 
         Inventory inv;
+
+        List<String> adminSignID = new ArrayList<String>();
+        adminSignID.add(signID);
 
         if(!Global.editModeEnabled.contains(player.getUniqueId())) {
             inv = Bukkit.createInventory(null, 18, title);
@@ -240,7 +243,8 @@ public class ShopGUI implements Listener {
             } else {
                 adminBuyOperatorMeta.setDisplayName("BUY: OFF");
             }
-            adminBuyOperatorMeta.setLore(signID);
+
+            adminBuyOperatorMeta.setLore(adminSignID);
             adminBuyOperator.setItemMeta(adminBuyOperatorMeta);
             inv.setItem(18, adminBuyOperator);
 
@@ -250,7 +254,7 @@ public class ShopGUI implements Listener {
             } else {
                 adminSellOperatorMeta.setDisplayName("SELL: OFF");
             }
-            adminSellOperatorMeta.setLore(signID);
+            adminSellOperatorMeta.setLore(adminSignID);
             adminSellOperator.setItemMeta(adminSellOperatorMeta);
             inv.setItem(26, adminSellOperator);
         }
