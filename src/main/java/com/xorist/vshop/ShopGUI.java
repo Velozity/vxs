@@ -7,10 +7,8 @@ import com.velozity.helpers.Interactions;
 import com.velozity.types.Shop;
 import com.velozity.vshop.Global;
 import com.xorist.vshop.ShopGUI;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
+
+import java.util.*;
 import java.util.logging.Logger;
 import com.velozity.vshop.Main;
 import net.milkbowl.vault.economy.Economy;
@@ -101,9 +99,11 @@ public class ShopGUI implements Listener {
         } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot == 18) {
             e.setCancelled(true);
             disableBuyItems();
+            log.info(String.valueOf(clickedItem.getItemMeta().getLore()));
         } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot == 26) {
             e.setCancelled(true);
             disableSellItems();
+            log.info(String.valueOf(clickedItem.getItemMeta().getLore()));
         } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot < 27) {
             e.setCancelled(true);
         } else if(clickedItemSlot < 18) {
@@ -140,18 +140,18 @@ public class ShopGUI implements Listener {
         }
     }
 
-    public void openShopGUI(Material material, HumanEntity player, String name, String[] lore, String title, int buyPrice, int sellPrice) {
-            player.openInventory(createInventory(material, name, lore, title, buyPrice, sellPrice, player));
+    public void openShopGUI(Material material, HumanEntity player, String name, List<String> lore, String title, int buyPrice, int sellPrice, List<String> signID) {
+            player.openInventory(createInventory(material, name, lore, title, buyPrice, sellPrice, player, signID));
     }
 
-    public Inventory createInventory(Material material, String name, String[] lore, String title, int buyPrice, int sellPrice, HumanEntity player) {
+    public Inventory createInventory(Material material, String name, List<String> lore, String title, int buyPrice, int sellPrice, HumanEntity player, List<String> signID) {
 
         Inventory inv;
 
         if(!Global.editModeEnabled.contains(player.getUniqueId())) {
             inv = Bukkit.createInventory(null, 18, title);
         } else {
-            inv = Bukkit.createInventory(null, 27, title + " (admin mode)");
+            inv = Bukkit.createInventory(null, 27, title + " (edit mode)");
         }
 
         ItemStack toBuy = new ItemStack(material);
@@ -242,6 +242,7 @@ public class ShopGUI implements Listener {
             } else {
                 adminBuyOperatorMeta.setDisplayName("BUY: OFF");
             }
+            adminBuyOperatorMeta.setLore(signID);
             adminBuyOperator.setItemMeta(adminBuyOperatorMeta);
             inv.setItem(18, adminBuyOperator);
 
@@ -251,6 +252,7 @@ public class ShopGUI implements Listener {
             } else {
                 adminSellOperatorMeta.setDisplayName("SELL: OFF");
             }
+            adminSellOperatorMeta.setLore(signID);
             adminSellOperator.setItemMeta(adminSellOperatorMeta);
             inv.setItem(26, adminSellOperator);
         }
