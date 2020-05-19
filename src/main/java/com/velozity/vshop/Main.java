@@ -129,8 +129,9 @@ public class Main extends JavaPlugin {
                 }
             }
 
-            if (args[0].equals("openshop")) {
-                shopgui.openShopGUI(Material.APPLE, (HumanEntity)player, "Apple", "A very nice apple");
+            if (args[0].equals("open")) {
+                String[] lore = new String[] {"A very nice apple"};
+                shopgui.openShopGUI(Material.APPLE, (HumanEntity)player, "Apple", lore, "Shop", 10, 10);
             }
         }
 

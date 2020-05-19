@@ -29,6 +29,7 @@ public class Shop implements ConfigurationSerializable {
     @Setter
     public Boolean buyable = true, sellable = true;
 
+
     public Shop(String title, String itemid, List<String> lore, Integer buyprice, Integer sellprice, Boolean buyable, Boolean sellable) {
         this.title = title;
         this.itemid = itemid;
