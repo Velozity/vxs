@@ -8,9 +8,8 @@ import com.velozity.types.Shop;
 import com.velozity.vshop.Global;
 import com.xorist.vshop.ShopGUI;
 
-import java.util.Arrays;
+import java.util.*;
 import java.util.logging.Logger;
-
 import com.velozity.vshop.Main;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -20,6 +19,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
@@ -30,6 +30,7 @@ public class ShopGUI implements Listener {
 
     Interactions interact = Global.interact;
     Logger log = Global.log;
+    Economy econ = Global.econ;
 
     protected ItemStack createGuiItem(final Material material, final String name, final String lore) {
         log.info("CreateGUIItem");
@@ -45,21 +46,14 @@ public class ShopGUI implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryDragEvent e) {
-        if(e.getInventory().getHolder() != null)
-            e.setCancelled(true);
+        if(e.getInventory().getHolder() != null) {
+            return;
+        }
+        e.setCancelled(true);
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent e) {
-        if(e.getInventory().getHolder() != null) {
-            return;
-        }
-        if(e.isShiftClick()) {
-            e.setCancelled(true);
-        }
-
-        // debugging prints
-        log.info("Get Cursor: " + String.valueOf(e.getCursor().getType()));
 
         Inventory inventory = e.getInventory();
         int clickedItemSlot = e.getRawSlot();
@@ -68,31 +62,59 @@ public class ShopGUI implements Listener {
         ItemStack cursorItem = new ItemStack(Material.AIR);
         ItemStack clickedItem = new ItemStack(Material.AIR);
 
-        if(e.getCursor() == null) {
-            log.info("cursor is null");
-        } else {
-            log.info("Cursor: " + String.valueOf(e.getCursor().getType()));
+        if(e.getInventory().getHolder() != null) {
+            return;
+        }
+
+        if((clickedItemSlot < 18 && !Global.editModeEnabled.contains(player.getUniqueId())) || (clickedItemSlot < 27 && Global.editModeEnabled.contains(player.getUniqueId())) || e.isShiftClick() || (e.getClick() == ClickType.DOUBLE_CLICK)) {
+            e.setCancelled(true);
+        }
+
+        if(e.isShiftClick()) {
+            //e.setCancelled(true);
+        }
+        if (e.getClick() == ClickType.DOUBLE_CLICK) {
+            //e.setCancelled(true);
+        }
+
+        if(e.getCursor() != null) {
             cursorItem = e.getCursor();
         }
 
-        if(e.getCurrentItem() == null) {
-            log.info("current item is null");
-        } else {
-            log.info("Current Item: " + String.valueOf(e.getCurrentItem().getType()));
+        if(e.getCurrentItem() != null) {
             clickedItem = e.getCurrentItem();
         }
 
         if(clickedItemSlot >= 0 && clickedItemSlot <= 2) {
-            log.info("1");
-            e.setCancelled(true);
             subtractItems(inventory, clickedItemSlot);
         } else if(clickedItemSlot >= 6 && clickedItemSlot <= 8) {
-            log.info("2");
-            e.setCancelled(true);
             addItems(inventory, clickedItemSlot);
+        } else if(clickedItemSlot == 12) {
+            // buy item
+            log.info("Buying item!");
+        } else if(clickedItemSlot == 13) {
+            // sell item
+            log.info("Selling item!");
+        } else if(clickedItemSlot == 14) {
+            // sell all items
+            log.info("Selling all items!");
+        } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot == 18) {
+            disableBuyItems();
+            log.info(String.valueOf(clickedItem.getItemMeta().getLore()));
+        } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot == 26) {
+            disableSellItems();
+            log.info(String.valueOf(clickedItem.getItemMeta().getLore()));
+        } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot < 27) {
         } else if(clickedItemSlot < 18) {
-            e.setCancelled(true);
         }
+    }
+
+    public void disableBuyItems() {
+        log.info("Disabling Buy Items");
+    }
+
+    public void disableSellItems() {
+        log.info("Disabling Sell Items");
     }
 
     public void addItems(Inventory inv, int slotClicked) {
@@ -116,12 +138,19 @@ public class ShopGUI implements Listener {
         }
     }
 
-    public void openShopGUI(Material material, HumanEntity player, String name, String lore) {
-        player.openInventory(createInventory(material, name, lore));
+    public void openShopGUI(Material material, HumanEntity player, String name, List<String> lore, String title, int buyPrice, int sellPrice, List<String> signID) {
+            player.openInventory(createInventory(material, name, lore, title, buyPrice, sellPrice, player, signID));
     }
 
-    public Inventory createInventory(Material material, String name, String lore) {
-        Inventory inv = Bukkit.createInventory(null, 18, "Shop");
+    public Inventory createInventory(Material material, String name, List<String> lore, String title, int buyPrice, int sellPrice, HumanEntity player, List<String> signID) {
+
+        Inventory inv;
+
+        if(!Global.editModeEnabled.contains(player.getUniqueId())) {
+            inv = Bukkit.createInventory(null, 18, title);
+        } else {
+            inv = Bukkit.createInventory(null, 27, title + " (edit mode)");
+        }
 
         ItemStack toBuy = new ItemStack(material);
 
@@ -130,6 +159,22 @@ public class ShopGUI implements Listener {
 
         ItemStack subOperator = new ItemStack(Material.RED_STAINED_GLASS_PANE);
         ItemMeta subOperatorMeta = subOperator.getItemMeta();
+
+        ItemStack buyOperator = new ItemStack(Material.GREEN_STAINED_GLASS);
+        ItemMeta buyOperatorMeta = buyOperator.getItemMeta();
+
+        ItemStack sellOperator = new ItemStack(Material.RED_STAINED_GLASS);
+        ItemMeta sellOperatorMeta = sellOperator.getItemMeta();
+
+        ItemStack sellAllOperator = new ItemStack(Material.RED_STAINED_GLASS);
+        ItemMeta sellAllOperatorMeta = sellAllOperator.getItemMeta();
+
+        ItemStack adminBuyOperator = new ItemStack(Material.ENCHANTED_BOOK);
+        ItemMeta adminBuyOperatorMeta = adminBuyOperator.getItemMeta();
+
+        ItemStack adminSellOperator = new ItemStack(Material.ENCHANTED_BOOK);
+        ItemMeta adminSellOperatorMeta = adminSellOperator.getItemMeta();
+
 
         if(material.getMaxStackSize() > 7) {
             subOperator.setAmount(material.getMaxStackSize());
@@ -168,6 +213,47 @@ public class ShopGUI implements Listener {
         addOperatorMeta.setDisplayName("ADD 1");
         addOperator.setItemMeta(addOperatorMeta);
         inv.setItem(6, addOperator);
+
+        if(buyPrice > 0) {
+            buyOperator.setAmount(1);
+            buyOperatorMeta.setDisplayName("BUY");
+            buyOperator.setItemMeta(buyOperatorMeta);
+            inv.setItem(12, buyOperator);
+        }
+
+        if(sellPrice > 0) {
+            sellOperator.setAmount(1);
+            sellOperatorMeta.setDisplayName("SELL");
+            sellOperator.setItemMeta(sellOperatorMeta);
+            inv.setItem(13, sellOperator);
+
+            sellAllOperator.setAmount(1);
+            sellAllOperatorMeta.setDisplayName("SELL ALL");
+            sellAllOperator.setItemMeta(sellAllOperatorMeta);
+            inv.setItem(14, sellAllOperator);
+        }
+
+        if(Global.editModeEnabled.contains(player.getUniqueId())) {
+            adminBuyOperator.setAmount(1);
+            if(buyPrice > 0) {
+                adminBuyOperatorMeta.setDisplayName("BUY: ON");
+            } else {
+                adminBuyOperatorMeta.setDisplayName("BUY: OFF");
+            }
+            adminBuyOperatorMeta.setLore(signID);
+            adminBuyOperator.setItemMeta(adminBuyOperatorMeta);
+            inv.setItem(18, adminBuyOperator);
+
+            adminSellOperator.setAmount(1);
+            if(sellPrice > 0) {
+                adminSellOperatorMeta.setDisplayName("SELL: ON");
+            } else {
+                adminSellOperatorMeta.setDisplayName("SELL: OFF");
+            }
+            adminSellOperatorMeta.setLore(signID);
+            adminSellOperator.setItemMeta(adminSellOperatorMeta);
+            inv.setItem(26, adminSellOperator);
+        }
 
         return inv;
     }

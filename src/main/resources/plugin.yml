@@ -4,15 +4,7 @@ version: 1.0
 author: Velozity
 api-version: 1.15
 
-settings:
-  debug: true
-
 commands:
   vshop:
     description: Commands for VShop
     aliases: vs
-
-permissions:
-  vshop.createshop:
-    description: Allows creation of shops
-    default: op
