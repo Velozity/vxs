@@ -65,8 +65,7 @@ public class Main extends JavaPlugin {
             e.printStackTrace();
         }
 
-        setupSigns();
-
+        //setupSigns();
     }
 
     private boolean setupSigns() {
