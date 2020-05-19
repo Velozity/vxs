@@ -132,13 +132,11 @@ public class Main extends JavaPlugin {
             }
 
             if (args[0].equals("open")) {
+
                 List<String> lore = new ArrayList<String>();
-                List<String> signID = new ArrayList<String>();
-
                 lore.add("A very nice apple");
-                signID.add("-12345678");
 
-                shopgui.openShopGUI(Material.APPLE, player, signID, "Shop", lore, 10, 10);
+                shopgui.openShopGUI(Material.APPLE, player, "-12345678", "Shop", lore, 10, 10);
             }
         }
 
