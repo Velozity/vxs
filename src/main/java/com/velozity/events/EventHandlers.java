@@ -166,6 +166,7 @@ public class EventHandlers implements Listener {
 
                     }
 
+
                     Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + displayItemName, item, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable), true);
                     Global.interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
                     Global.armedSigns.add(signId);
