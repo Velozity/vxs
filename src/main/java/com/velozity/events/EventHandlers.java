@@ -25,6 +25,8 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.PotionEffect;
 
 import java.io.IOException;
 import java.util.*;
@@ -147,7 +149,15 @@ public class EventHandlers implements Listener {
                     }
 
                     String displayItemName = WordUtils.capitalizeFully(item.toString().replace("_", " "));
-                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + displayItemName, item.toString(), lore, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable));
+
+
+                    List<PotionEffect> potionData = new ArrayList<>();
+                    if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() instanceof PotionMeta) {
+                        PotionMeta potion = (PotionMeta)e.getPlayer().getInventory().getItemInMainHand().getItemMeta();
+                        potionData = potion.getCustomEffects();
+                    }
+
+                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + displayItemName, item.toString(), lore, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable, potionData));
                     Global.interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
                     Global.armedSigns.add(signId);
 

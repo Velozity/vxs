@@ -9,6 +9,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Item;
+import org.bukkit.potion.PotionEffect;
 
 import java.io.*;
 import java.util.*;
@@ -80,6 +81,7 @@ public class ShopConfig {
         shop.sellprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("sellprice");
         shop.buyable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("buyable");
         shop.sellable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("sellable");
+        shop.potiondata = (List<PotionEffect>)getShopsConfig().getConfigurationSection("shops." + signId).getList("potiondata");
 
         return shop;
     }
