@@ -80,15 +80,19 @@ public class ShopConfig {
     }
 
     public Shop getShop(String signId) {
+        try {
+            shopsConfig.load(shopsConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
+
         Shop shop = new Shop();
         shop.title = getShopsConfig().getConfigurationSection("shops." + signId).getString("title");
-        shop.itemid = getShopsConfig().getConfigurationSection("shops." + signId).getString("itemid");
-        shop.lore = (List<String>)getShopsConfig().getConfigurationSection("shops." + signId).getList("lore");
+        shop.item = getShopsConfig().getConfigurationSection("shops." + signId).getItemStack("item");
         shop.buyprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("buyprice");
         shop.sellprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("sellprice");
         shop.buyable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("buyable");
         shop.sellable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("sellable");
-        shop.potiondata = (LinkedHashMap<String, List<PotionEffect>>)getShopsConfig().getConfigurationSection("shops." + signId).getList("potiondata");
 
         return shop;
     }
@@ -105,13 +109,11 @@ public class ShopConfig {
             Shop shop = new Shop();
 
             shop.title = getShopsConfig().getConfigurationSection("shops." + key).getString("title");
-            shop.itemid = getShopsConfig().getConfigurationSection("shops." + key).getString("itemid");
-            shop.lore = (List<String>)getShopsConfig().getConfigurationSection("shops." + key).getList("lore");
+            shop.item = getShopsConfig().getConfigurationSection("shops." + key).getItemStack("item");
             shop.buyprice = getShopsConfig().getConfigurationSection("shops." + key).getInt("buyprice");
             shop.sellprice = getShopsConfig().getConfigurationSection("shops." + key).getInt("sellprice");
             shop.buyable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("buyable");
             shop.sellable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("sellable");
-            shop.potiondata = (LinkedHashMap<String, List<PotionEffect>>)getShopsConfig().getConfigurationSection("shops." + key).getList("potiondata");
 
             shops.put(key, shop);
         }
