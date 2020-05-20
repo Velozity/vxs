@@ -74,11 +74,11 @@ public class Main extends JavaPlugin {
     }
 
     private boolean setupSigns() {
-        Map<String, Shop> shops = shopConfig.getShops();
+        Set<String> shops = shopConfig.getSignIds();
         Global.armedSigns.clear();
 
-        shops.forEach((key, shop) -> {
-            Global.armedSigns.add(Integer.valueOf(key));
+        shops.forEach((signId) -> {
+            Global.armedSigns.add(Integer.valueOf(signId));
         });
 
         interact.logServer(LogType.info,"Loaded " + Global.armedSigns.size() + " shop signs");

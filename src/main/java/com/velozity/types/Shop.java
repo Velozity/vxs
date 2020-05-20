@@ -6,6 +6,7 @@ import org.bukkit.Material;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.inventory.*;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 
 import java.util.HashMap;
@@ -31,10 +32,10 @@ public class Shop implements ConfigurationSerializable {
     public Boolean buyable = true, sellable = true;
     @Getter
     @Setter
-    public List<PotionEffect> potiondata;
+    public LinkedHashMap<String, List<PotionEffect>> potiondata;
 
 
-    public Shop(String title, String itemid, List<String> lore, Integer buyprice, Integer sellprice, Boolean buyable, Boolean sellable, List<PotionEffect> potiondata) {
+    public Shop(String title, String itemid, List<String> lore, Integer buyprice, Integer sellprice, Boolean buyable, Boolean sellable, LinkedHashMap<String, List<PotionEffect>> potiondata) {
         this.title = title;
         this.itemid = itemid;
         this.lore = lore;
