@@ -53,7 +53,7 @@ public class EventHandlers implements Listener {
                 Integer signId = e.getClickedBlock().hashCode();
                 Set<String> signIds = Global.shopConfig.getSignIds();
                 // If sign being hit is in a registered sign shop & its a normal user
-                if(signIds.contains(String.valueOf(signId)) && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
+                if(signIds.contains(String.valueOf(signId)) /*&& !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())*/) {
                     Shop shop = Global.shopConfig.getShops().get(signId.toString());
                     Global.shopgui.openShopGUI(Material.getMaterial(shop.itemid), e.getPlayer(), String.valueOf(e.getClickedBlock().hashCode()), shop.title, shop.lore, shop.buyprice, shop.sellprice);
                     e.setCancelled(true);
