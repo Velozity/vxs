@@ -11,10 +11,17 @@ import com.xorist.vshop.ShopGUI;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -31,6 +38,27 @@ public class EventHandlers implements Listener {
         if (e.getPlayer().hasPermission("vshop.createshop")) {
             if(e.getLine(0).toLowerCase().equals("[shop]")) {
                 e.setLine(0, "[Shop]");
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent e) {
+        Player player = e.getPlayer();
+        Action action = e.getAction();
+        Block clickedBlock = e.getClickedBlock();
+        if(action == Action.RIGHT_CLICK_BLOCK) {
+            if (clickedBlock.getType().equals(Material.SIGN) || clickedBlock.getType().equals(Material.WALL_SIGN) || clickedBlock.getType().equals(Material.LEGACY_SIGN_POST)) {
+                org.bukkit.block.Sign ws = (org.bukkit.block.Sign)clickedBlock.getState();
+                Integer signId = e.getClickedBlock().hashCode();
+                Set<String> signIds = Global.shopConfig.getSignIds();
+                // If sign being hit is in a registered sign shop & its a normal user
+                if(signIds.contains(String.valueOf(signId)) && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
+                    Shop shop = Global.shopConfig.getShops().get(signId.toString());
+                    Global.shopgui.openShopGUI(Material.getMaterial(shop.itemid), e.getPlayer(), String.valueOf(e.getClickedBlock().hashCode()), shop.title, shop.lore, shop.buyprice, shop.sellprice);
+                    e.setCancelled(true);
+                    return;
+                }
             }
         }
     }
