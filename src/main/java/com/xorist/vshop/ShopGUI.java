@@ -156,6 +156,9 @@ public class ShopGUI implements Listener {
         }
 
         ItemStack toBuy = new ItemStack(material);
+        ItemMeta toBuyMeta = toBuy.getItemMeta();
+        toBuyMeta.setLore(lore);
+        toBuy.setItemMeta(toBuyMeta);
 
         ItemStack addOperator = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
         ItemMeta addOperatorMeta = addOperator.getItemMeta();

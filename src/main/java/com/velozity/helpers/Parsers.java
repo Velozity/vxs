@@ -4,13 +4,15 @@ import com.velozity.vshop.Global;
 
 public class Parsers {
     public Integer signPrice(String line) {
-        Global.log.info("25");
-        String toParse = line.replace("B", "").replace("$", "").replace("-", "").trim();
-        Global.log.info("2");
-        if(!toParse.isEmpty()) {
-            return Integer.parseInt(toParse);
+
+        String toParse = line.toLowerCase().replace("b", "").replace("s", "").replace("$", "").replace("-", "").replace(" ", "").trim();
+        int price = -1;
+        try {
+            price = Integer.parseInt(toParse);
+        } catch (NumberFormatException e) {
+            return -1;
         }
 
-        return -1;
+        return price;
     }
 }
