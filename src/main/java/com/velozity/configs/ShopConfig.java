@@ -52,6 +52,11 @@ public class ShopConfig {
         getShopsConfig().save(shopsConfigFile);
     }
 
+    public void removeShop(String signId) throws IOException {
+        getShopsConfig().set("shops." + signId, null);
+        getShopsConfig().save(shopsConfigFile);
+    }
+
     public Set<String> getSignIds() {
         try {
             shopsConfig.load(shopsConfigFile);

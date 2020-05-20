@@ -1,6 +1,8 @@
 package com.velozity.configs;
 
+import com.velozity.types.LogType;
 import com.velozity.types.Shop;
+import com.velozity.vshop.Global;
 import lombok.Getter;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -41,7 +43,7 @@ public class MainConfig {
         try {
             mainConfig.load(mainConfigFile);
         } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
+            Global.interact.logServer(LogType.error, "Could not load mainConfig file! Try restarting or checking file permissions");
         }
     }
 
@@ -49,7 +51,7 @@ public class MainConfig {
         try {
             mainConfig.load(mainConfigFile);
         } catch (IOException | InvalidConfigurationException e) {
-            e.printStackTrace();
+            Global.interact.logServer(LogType.error,"Something went wrong when trying to read setting: " + key + "in your config.yml");
         }
 
         return getMainConfig().getConfigurationSection("settings").get(key);
