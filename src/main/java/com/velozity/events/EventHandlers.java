@@ -62,7 +62,6 @@ public class EventHandlers implements Listener {
                     if(Global.armedSigns.contains(signId)) {
                         if(Global.pendingRemoveSigns.contains(signId)) {
                             // REMOVE SIGN SHOP
-                            log.info("1");
                             Global.interact.msgPlayer("Shop removed", e.getPlayer());
                             Global.armedSigns.remove(signId);
                             Global.pendingRemoveSigns.remove(signId);
@@ -70,11 +69,18 @@ public class EventHandlers implements Listener {
                             e.setCancelled(false);
                             return;
                         } else {
-                            log.info("2");
                             Global.interact.msgPlayer("Hit sign again to remove shop", e.getPlayer());
                             Global.pendingRemoveSigns.add(signId);
+                            new java.util.Timer().schedule(
+                                    new java.util.TimerTask() {
+                                        @Override
+                                        public void run() {
+                                            Global.pendingRemoveSigns.remove(signId);
+                                        }
+                                    },
+                                    5000
+                            );
                         }
-                        log.info("3");
                         e.setCancelled(true);
                         return;
                     }
@@ -88,8 +94,22 @@ public class EventHandlers implements Listener {
                     log.info("5");
                     Material item = e.getPlayer().getInventory().getItemInMainHand().getType();
 
+                    int parsedLine3 = Global.parser.signPrice(ws.getLine(2));
+                    int parsedLine4 = Global.parser.signPrice(ws.getLine(3));
+
+                    if(parsedLine3 == -1 || parsedLine4 == -1) {
+                        Global.interact.msgPlayer("Invalid buy/sell syntax", e.getPlayer());
+                        e.setCancelled(false);
+                        return;
+                    }
                     boolean buyable = true;
                     boolean sellable = true;
+                    String line3Res = "Buy: " + Global.parser.signPrice(ws.getLine(2)).toString();
+                    String line4Res = "Sell: " + Global.parser.signPrice(ws.getLine(3)).toString();
+                    List<String> lore = new ArrayList<>();
+                    lore.add(line3Res);
+                    lore.add(line4Res);
+
                     if(Global.parser.signPrice(line3).equals(-1)) {
                         buyable = false;
                     }
@@ -97,8 +117,8 @@ public class EventHandlers implements Listener {
                     if(Global.parser.signPrice(line4).equals(-1)) {
                         sellable = false;
                     }
-                    log.info("1");
-                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + WordUtils.capitalizeFully(item.toString().replace("_", " ")), item.toString(), Collections.emptyList(), Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable));
+
+                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + WordUtils.capitalizeFully(item.toString().replace("_", " ")), item.toString(), lore, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable));
                     Global.interact.msgPlayer("Sign armed and shop ready", e.getPlayer());
                     Global.armedSigns.add(signId);
 
