@@ -26,8 +26,11 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.Potion;
+import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 
+import java.io.Console;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -52,7 +55,7 @@ public class EventHandlers implements Listener {
                 Set<String> signIds = Global.shopConfig.getSignIds();
                 // If sign being hit is in a registered sign shop & its a normal user
                 if(signIds.contains(String.valueOf(signId)) /*&& !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())*/) {
-                    Shop shop = Global.shopConfig.getShops().get(signId.toString());
+                    Shop shop = Global.shopConfig.getShop(signId.toString());
                     Global.shopgui.openShopGUI(Material.getMaterial(shop.itemid), e.getPlayer(), String.valueOf(e.getClickedBlock().hashCode()), shop.title, shop.lore, shop.buyprice, shop.sellprice);
                     e.setCancelled(true);
                     return;
@@ -121,8 +124,8 @@ public class EventHandlers implements Listener {
                         e.setCancelled(false);
                         return;
                     }
-                    log.info("5");
-                    Material item = e.getPlayer().getInventory().getItemInMainHand().getType();
+
+                    ItemStack item = e.getPlayer().getInventory().getItemInMainHand();
 
                     int parsedLine3 = Global.parser.signPrice(ws.getLine(2));
                     int parsedLine4 = Global.parser.signPrice(ws.getLine(3));
@@ -148,16 +151,22 @@ public class EventHandlers implements Listener {
                         sellable = false;
                     }
 
-                    String displayItemName = WordUtils.capitalizeFully(item.toString().replace("_", " "));
+                    String displayItemName = WordUtils.capitalizeFully(item.getType().toString().replace("_", " "));
+                    log.info("gsg: " + displayItemName);
+                    LinkedHashMap<String, List<PotionEffect>> potionData = new LinkedHashMap<>();
 
 
-                    List<PotionEffect> potionData = new ArrayList<>();
-                    if(e.getPlayer().getInventory().getItemInMainHand().getItemMeta() instanceof PotionMeta) {
-                        PotionMeta potion = (PotionMeta)e.getPlayer().getInventory().getItemInMainHand().getItemMeta();
-                        potionData = potion.getCustomEffects();
+                    String itemId = item.getType().toString();
+                    if(item.getItemMeta() instanceof PotionMeta) {
+
+                        PotionMeta potionMeta = (PotionMeta)item.getItemMeta();
+                        displayItemName = "Potion of " + WordUtils.capitalizeFully(potionMeta.getBasePotionData().getType().toString().replace("_", " "));
+
+                        potionData.put(potionMeta.getBasePotionData().getType().toString(), potionMeta.getCustomEffects());
+
                     }
 
-                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + displayItemName, item.toString(), lore, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable, potionData));
+                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + displayItemName, itemId, lore, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable, potionData));
                     Global.interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
                     Global.armedSigns.add(signId);
 

@@ -9,6 +9,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Item;
+import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 
 import java.io.*;
@@ -81,7 +82,7 @@ public class ShopConfig {
         shop.sellprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("sellprice");
         shop.buyable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("buyable");
         shop.sellable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("sellable");
-        shop.potiondata = (List<PotionEffect>)getShopsConfig().getConfigurationSection("shops." + signId).getList("potiondata");
+        shop.potiondata = (LinkedHashMap<String, List<PotionEffect>>)getShopsConfig().getConfigurationSection("shops." + signId).getList("potiondata");
 
         return shop;
     }
@@ -104,6 +105,8 @@ public class ShopConfig {
             shop.sellprice = getShopsConfig().getConfigurationSection("shops." + key).getInt("sellprice");
             shop.buyable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("buyable");
             shop.sellable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("sellable");
+            shop.potiondata = (LinkedHashMap<String, List<PotionEffect>>)getShopsConfig().getConfigurationSection("shops." + key).getList("potiondata");
+
             shops.put(key, shop);
         }
 
