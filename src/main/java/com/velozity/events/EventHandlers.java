@@ -56,7 +56,7 @@ public class EventHandlers implements Listener {
                 // If sign being hit is in a registered sign shop & its a normal user
                 if(signIds.contains(String.valueOf(signId)) /*&& !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())*/) {
                     Shop shop = Global.shopConfig.getShop(signId.toString());
-                    Global.shopgui.openShopGUI(Material.getMaterial(shop.itemid), e.getPlayer(), String.valueOf(e.getClickedBlock().hashCode()), shop.title, shop.lore, shop.buyprice, shop.sellprice);
+                    Global.shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), String.valueOf(e.getClickedBlock().hashCode()), shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
                     e.setCancelled(true);
                     return;
                 }
@@ -77,7 +77,7 @@ public class EventHandlers implements Listener {
             if(signIds.contains(String.valueOf(signId)) && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
                 Shop shop = Global.shopConfig.getShops().get(signId.toString());
 
-                Global.shopgui.openShopGUI(Material.getMaterial(shop.itemid), e.getPlayer(), String.valueOf(e.getBlock().hashCode()), shop.title, shop.lore, shop.buyprice, shop.sellprice);
+                Global.shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), String.valueOf(e.getBlock().hashCode()), shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
                 e.setCancelled(true);
                 return;
             }
@@ -166,7 +166,8 @@ public class EventHandlers implements Listener {
 
                     }
 
-                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + displayItemName, itemId, lore, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable, potionData), true);
+
+                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + displayItemName, item, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable), true);
                     Global.interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
                     Global.armedSigns.add(signId);
 

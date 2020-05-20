@@ -17,10 +17,10 @@ import java.util.Map;
 public class Shop implements ConfigurationSerializable {
     @Getter
     @Setter
-    public String title, itemid;
+    public String title;
     @Getter
     @Setter
-    public List<String> lore;
+    public ItemStack item;
     @Getter
     @Setter
     public Integer buyprice = 0;
@@ -30,20 +30,14 @@ public class Shop implements ConfigurationSerializable {
     @Getter
     @Setter
     public Boolean buyable = true, sellable = true;
-    @Getter
-    @Setter
-    public LinkedHashMap<String, List<PotionEffect>> potiondata;
 
-
-    public Shop(String title, String itemid, List<String> lore, Integer buyprice, Integer sellprice, Boolean buyable, Boolean sellable, LinkedHashMap<String, List<PotionEffect>> potiondata) {
+    public Shop(String title, ItemStack item, Integer buyprice, Integer sellprice, Boolean buyable, Boolean sellable) {
         this.title = title;
-        this.itemid = itemid;
-        this.lore = lore;
+        this.item = item;
         this.buyprice = buyprice;
         this.sellprice = sellprice;
         this.buyable = buyable;
         this.sellable = sellable;
-        this.potiondata = potiondata;
     }
 
     public Shop() {
@@ -54,19 +48,12 @@ public class Shop implements ConfigurationSerializable {
     public Map<String, Object> serialize() {
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("title", title);
-        data.put("itemid", itemid);
-        data.put("lore", lore);
+        data.put("item", item);
         data.put("buyprice", buyprice);
         data.put("sellprice", sellprice);
         data.put("buyable", buyable);
         data.put("sellable", sellable);
-        data.put("potiondata", potiondata);
 
         return data;
-    }
-
-    @Override
-    public String toString() {
-        return "title: " + title + ", itemid: " + itemid + ", lore:" + lore + ", buyprice: " + buyprice + ", sellprice: " + sellprice + ", buyable: " + buyable + ", sellable: " + sellable;
     }
 }
