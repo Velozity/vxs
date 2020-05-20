@@ -80,6 +80,11 @@ public class ShopConfig {
     }
 
     public Shop getShop(String signId) {
+        try {
+            shopsConfig.load(shopsConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
         Shop shop = new Shop();
         shop.title = getShopsConfig().getConfigurationSection("shops." + signId).getString("title");
         shop.itemid = getShopsConfig().getConfigurationSection("shops." + signId).getString("itemid");
