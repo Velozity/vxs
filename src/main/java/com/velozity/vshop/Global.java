@@ -16,6 +16,8 @@ import java.util.logging.Logger;
 
 public class Global {
 
+    public static Main getMainInstance;
+
     public static final Logger log = Logger.getLogger("Minecraft");
     public static Economy econ = null;
     public static Permission perms = null;

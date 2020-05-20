@@ -1,5 +1,6 @@
 package com.velozity.events;
 
+import com.velozity.types.LogType;
 import com.velozity.types.Shop;
 import com.velozity.vshop.Global;
 import com.velozity.vshop.Main;
@@ -34,15 +35,6 @@ public class EventHandlers implements Listener {
     private static final Logger log = Logger.getLogger("Minecraft");
 
     @EventHandler
-    public void onSignChange(SignChangeEvent e) {
-        if (e.getPlayer().hasPermission("vshop.createshop")) {
-            if(e.getLine(0).toLowerCase().equals("[shop]")) {
-                e.setLine(0, "[Shop]");
-            }
-        }
-    }
-
-    @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
         Player player = e.getPlayer();
         Action action = e.getAction();
@@ -50,6 +42,10 @@ public class EventHandlers implements Listener {
         if(action == Action.RIGHT_CLICK_BLOCK) {
             if (clickedBlock.getType().equals(Material.SIGN) || clickedBlock.getType().equals(Material.WALL_SIGN) || clickedBlock.getType().equals(Material.LEGACY_SIGN_POST)) {
                 org.bukkit.block.Sign ws = (org.bukkit.block.Sign)clickedBlock.getState();
+                if(!ws.getLine(0).toLowerCase().equals("[shop]") || Global.parser.signPrice(ws.getLine(2)) == -1 || Global.parser.signPrice(ws.getLine(3)) == -1) {
+                    e.setCancelled(false);
+                    return;
+                }
                 Integer signId = e.getClickedBlock().hashCode();
                 Set<String> signIds = Global.shopConfig.getSignIds();
                 // If sign being hit is in a registered sign shop & its a normal user
@@ -91,6 +87,7 @@ public class EventHandlers implements Listener {
                         if(Global.pendingRemoveSigns.contains(signId)) {
                             // REMOVE SIGN SHOP
                             Global.interact.msgPlayer("Shop removed", e.getPlayer());
+                            Global.shopConfig.removeShop(signId.toString());
                             Global.armedSigns.remove(signId);
                             Global.pendingRemoveSigns.remove(signId);
 
@@ -103,7 +100,10 @@ public class EventHandlers implements Listener {
                                     new java.util.TimerTask() {
                                         @Override
                                         public void run() {
-                                            Global.pendingRemoveSigns.remove(signId);
+                                            if(Global.pendingRemoveSigns.contains(signId)){
+                                                Global.pendingRemoveSigns.remove(signId);
+                                                Global.interact.msgPlayer("No 2nd hit detected - timed out", e.getPlayer());
+                                            }
                                         }
                                     },
                                     5000
@@ -146,10 +146,12 @@ public class EventHandlers implements Listener {
                         sellable = false;
                     }
 
-                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + WordUtils.capitalizeFully(item.toString().replace("_", " ")), item.toString(), lore, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable));
-                    Global.interact.msgPlayer("Sign armed and shop ready", e.getPlayer());
+                    String displayItemName = WordUtils.capitalizeFully(item.toString().replace("_", " "));
+                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + displayItemName, item.toString(), lore, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable));
+                    Global.interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
                     Global.armedSigns.add(signId);
 
+                    Global.interact.logServer(LogType.info, "Shop created [Item: " + displayItemName + "]");
                     e.setCancelled(true);
                 }
             }

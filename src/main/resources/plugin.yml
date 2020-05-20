@@ -8,3 +8,10 @@ commands:
   vshop:
     description: Commands for VShop
     aliases: vs
+
+permissions:
+  vshop.editmode.admin:
+    description: All permissions to setup an admin sign shop
+    children:
+      vshop.createshop: true
+      vshop.editgui: true
