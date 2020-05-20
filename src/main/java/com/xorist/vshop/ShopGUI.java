@@ -290,6 +290,15 @@ public class ShopGUI implements Listener {
 
         Inventory inv;
 
+        List<String> shopItemValues = new ArrayList<>();
+        shopItemValues.add("BUY: " + String.valueOf(buyPrice));
+        shopItemValues.add("SELL: " + String.valueOf(sellPrice));
+
+        ItemStack shopItem = Global.shopConfig.getShop(signID).item;
+        ItemMeta shopItemMeta = shopItem.getItemMeta();
+        shopItemMeta.setLore(shopItemValues);
+        shopItem.setItemMeta(shopItemMeta);
+
         Inventory playerInventory = player.getInventory();
 
         int totalSellableItems = 0;
@@ -392,7 +401,7 @@ public class ShopGUI implements Listener {
         subOperator.setItemMeta(subOperatorMeta);
         inv.setItem(2, subOperator);
 
-        inv.setItem(4, toBuy);
+        inv.setItem(4, shopItem);
 
         addOperator.setAmount(1);
         addOperatorMeta.setDisplayName("ADD 1");
