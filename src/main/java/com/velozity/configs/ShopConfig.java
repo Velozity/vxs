@@ -79,7 +79,7 @@ public class ShopConfig {
         return getShopsConfig().getConfigurationSection("shops").getKeys(false);
     }
 
-    public Boolean signIdExists(Integer signId) {
+    public Boolean signIdExists(String signId) {
 
         if(getShopsConfig().saveToString().trim().equals("")) {
             return false;
@@ -97,11 +97,11 @@ public class ShopConfig {
 
         Shop shop = new Shop();
         shop.title = getShopsConfig().getConfigurationSection("shops." + signId).getString("title");
+        shop.item = getShopsConfig().getConfigurationSection("shops." + signId).getItemStack("item");
         shop.buyprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("buyprice");
         shop.sellprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("sellprice");
         shop.buyable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("buyable");
         shop.sellable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("sellable");
-        shop.item = getShopsConfig().getConfigurationSection("shops." + signId).getItemStack("item");
 
         return shop;
     }
@@ -123,7 +123,7 @@ public class ShopConfig {
             shop.buyable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("buyable");
             shop.sellable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("sellable");
             shop.item = getShopsConfig().getConfigurationSection("shops." + key).getItemStack("item");
-            
+
             shops.put(key, shop);
         }
 

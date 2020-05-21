@@ -69,8 +69,10 @@ public class MainConfig {
 
     public void writeDefaultSettings() throws IOException {
         // Shop settings
-        getMainConfig().addDefault("settings.shop.signtitle", "[shop]");
+        getMainConfig().addDefault("settings.shop.signtitle", "§5[shop]");
         getMainConfig().addDefault("settings.shop.currencysymbol", "$");
+        getMainConfig().addDefault("settings.shop.buyprefix", "§4B");
+        getMainConfig().addDefault("settings.shop.sellprefix", "§2S");
         getMainConfig().addDefault("settings.shop.sellmultiple", false);
 
         // System settings

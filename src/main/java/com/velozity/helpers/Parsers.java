@@ -13,6 +13,10 @@ public class Parsers {
     public Integer signPrice(String line) {
 
         String toParse = line.toLowerCase().replace("b", "").replace("s", "").replace("$", "").replace("-", "").replace(" ", "").trim();
+        if(toParse.isEmpty()) {
+            return -2;
+        }
+
         int price = -1;
         try {
             price = Integer.parseInt(toParse);

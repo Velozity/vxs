@@ -48,17 +48,14 @@ public class EventHandlers implements Listener {
         Block clickedBlock = e.getClickedBlock();
         if(action == Action.RIGHT_CLICK_BLOCK) {
             if (clickedBlock.getType().equals(Material.SIGN) || clickedBlock.getType().equals(Material.WALL_SIGN) || clickedBlock.getType().equals(Material.LEGACY_SIGN_POST)) {
-                org.bukkit.block.Sign ws = (org.bukkit.block.Sign)clickedBlock.getState();
-                if(!ws.getLine(0).toLowerCase().equals("[shop]") || Global.parser.signPrice(ws.getLine(2)) == -1 || Global.parser.signPrice(ws.getLine(3)) == -1) {
-                    e.setCancelled(false);
-                    return;
-                }
-                Integer signId = e.getClickedBlock().hashCode();
+                String signId = Global.parser.locationToBase64(clickedBlock.getLocation());
+                System.out.println("SignID: " + signId);
                 Set<String> signIds = Global.shopConfig.getSignIds();
+
                 // If sign being hit is in a registered sign shop & its a normal user
                 if(signIds.contains(String.valueOf(signId)) /*&& !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())*/) {
-                    Shop shop = Global.shopConfig.getShop(signId.toString());
-                    Global.shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), String.valueOf(e.getClickedBlock().hashCode()), shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
+                    Shop shop = Global.shopConfig.getShop(signId);
+                    Global.shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), signId, shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
                     e.setCancelled(true);
                     return;
                 }
@@ -71,20 +68,18 @@ public class EventHandlers implements Listener {
 
         if (e.getBlock().getType().equals(Material.SIGN) || e.getBlock().getType().equals(Material.WALL_SIGN) || e.getBlock().getType().equals(Material.LEGACY_SIGN_POST)) {
             org.bukkit.block.Sign ws = (org.bukkit.block.Sign)e.getBlock().getState();
-            Integer signId = e.getBlock().hashCode();
+            String signId = Global.parser.locationToBase64(e.getBlock().getLocation());
 
             // If sign being hit is in a registered sign shop & its a normal user
             if(Global.shopConfig.signIdExists(signId) && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
                 Shop shop = Global.shopConfig.getShops().get(signId.toString());
-                Global.shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), String.valueOf(e.getBlock().hashCode()), shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
+                Global.shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), signId, shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
                 e.setCancelled(true);
                 return;
             }
             
             // If in editmode
             if(Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
-                // If its a shop sign
-                if(ws.getLine(0).toLowerCase().equals("[shop]")) {
                     // If the sign is already armed
                     if(Global.shopConfig.signIdExists(signId)) {
                         if(Global.pendingRemoveSigns.contains(signId)) {
@@ -135,14 +130,14 @@ public class EventHandlers implements Listener {
 
                     boolean buyable = true;
                     boolean sellable = true;
-                    String line3Res = "§5B " + Global.mainConfig.readSetting("shop", "currencysymbol") + Global.parser.signPrice(ws.getLine(2)).toString();
-                    String line4Res = "§5S " + Global.mainConfig.readSetting("shop", "currencysymbol") + Global.parser.signPrice(ws.getLine(3)).toString();
+                    String line3Res = Global.mainConfig.readSetting("shop", "buyprefix").toString() + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + parsedLine3;
+                    String line4Res = Global.mainConfig.readSetting("shop", "sellprefix").toString() + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + parsedLine4;
 
-                    if(Global.parser.signPrice(line3).equals(-1)) {
+                    if(Global.parser.signPrice(line3).equals(-2)) {
                         buyable = false;
                     }
 
-                    if(Global.parser.signPrice(line4).equals(-1)) {
+                    if(Global.parser.signPrice(line4).equals(-2)) {
                         sellable = false;
                     }
 
@@ -151,13 +146,19 @@ public class EventHandlers implements Listener {
                     Sign sign = ((Sign)e.getBlock().getState());
 
                     sign.setLine(0, Global.mainConfig.readSetting("shop", "signtitle").toString());
+
+                    if(buyable)
+                        sign.setLine(2, line3Res);
+
+                    if(sellable)
+                        sign.setLine(3, line4Res);
+
                     sign.update(true);
 
                     Global.shopConfig.writeShop(Global.parser.locationToBase64(e.getBlock().getLocation()), new Shop("Buy " + displayItemName, item, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable), true);
                     Global.interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
                     Global.interact.logServer(LogType.info, "Shop created [Item: " + displayItemName + "]");
                     e.setCancelled(true);
-                }
             }
         }
     }
