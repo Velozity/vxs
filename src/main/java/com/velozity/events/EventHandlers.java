@@ -15,6 +15,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -81,7 +82,7 @@ public class EventHandlers implements Listener {
                 e.setCancelled(true);
                 return;
             }
-
+            
             // If in editmode
             if(Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
 
@@ -160,6 +161,8 @@ public class EventHandlers implements Listener {
                     if(item.getItemMeta() instanceof PotionMeta) {
 
                         PotionMeta potionMeta = (PotionMeta)item.getItemMeta();
+                        log.info(String.valueOf(potionMeta.getBasePotionData().getType()));
+
                         displayItemName = "Potion of " + WordUtils.capitalizeFully(potionMeta.getBasePotionData().getType().toString().replace("_", " "));
 
                         potionData.put(potionMeta.getBasePotionData().getType().toString(), potionMeta.getCustomEffects());
