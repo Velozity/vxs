@@ -30,7 +30,6 @@ public class Global {
     public static final Parsers parser = new Parsers();
 
     public static List<UUID> editModeEnabled = new ArrayList<>();
-    public static List<Integer> armedSigns = new ArrayList<>();
     public static List<Integer> pendingRemoveSigns = new ArrayList<>();
 
 }

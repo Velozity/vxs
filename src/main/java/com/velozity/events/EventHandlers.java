@@ -10,6 +10,7 @@ import com.velozity.configs.ShopConfig;
 
 import com.xorist.vshop.ShopGUI;
 import org.apache.commons.lang.WordUtils;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -72,12 +73,9 @@ public class EventHandlers implements Listener {
             org.bukkit.block.Sign ws = (org.bukkit.block.Sign)e.getBlock().getState();
             Integer signId = e.getBlock().hashCode();
 
-            Set<String> signIds = Global.shopConfig.getSignIds();
-
             // If sign being hit is in a registered sign shop & its a normal user
-            if(signIds.contains(String.valueOf(signId)) && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
+            if(Global.shopConfig.signIdExists(signId) && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
                 Shop shop = Global.shopConfig.getShops().get(signId.toString());
-
                 Global.shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), String.valueOf(e.getBlock().hashCode()), shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
                 e.setCancelled(true);
                 return;
@@ -85,16 +83,14 @@ public class EventHandlers implements Listener {
             
             // If in editmode
             if(Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
-
                 // If its a shop sign
                 if(ws.getLine(0).toLowerCase().equals("[shop]")) {
                     // If the sign is already armed
-                    if(Global.armedSigns.contains(signId)) {
+                    if(Global.shopConfig.signIdExists(signId)) {
                         if(Global.pendingRemoveSigns.contains(signId)) {
                             // REMOVE SIGN SHOP
                             Global.interact.msgPlayer("Shop removed", e.getPlayer());
                             Global.shopConfig.removeShop(signId.toString());
-                            Global.armedSigns.remove(signId);
                             Global.pendingRemoveSigns.remove(signId);
 
                             e.setCancelled(false);
@@ -136,13 +132,11 @@ public class EventHandlers implements Listener {
                         e.setCancelled(false);
                         return;
                     }
+
                     boolean buyable = true;
                     boolean sellable = true;
-                    String line3Res = "Buy: " + Global.parser.signPrice(ws.getLine(2)).toString();
-                    String line4Res = "Sell: " + Global.parser.signPrice(ws.getLine(3)).toString();
-                    List<String> lore = new ArrayList<>();
-                    lore.add(line3Res);
-                    lore.add(line4Res);
+                    String line3Res = "§5B " + Global.mainConfig.readSetting("shop", "currencysymbol") + Global.parser.signPrice(ws.getLine(2)).toString();
+                    String line4Res = "§5S " + Global.mainConfig.readSetting("shop", "currencysymbol") + Global.parser.signPrice(ws.getLine(3)).toString();
 
                     if(Global.parser.signPrice(line3).equals(-1)) {
                         buyable = false;
@@ -153,27 +147,14 @@ public class EventHandlers implements Listener {
                     }
 
                     String displayItemName = WordUtils.capitalizeFully(item.getType().toString().replace("_", " "));
-                    log.info("gsg: " + displayItemName);
-                    LinkedHashMap<String, List<PotionEffect>> potionData = new LinkedHashMap<>();
 
+                    Sign sign = ((Sign)e.getBlock().getState());
 
-                    String itemId = item.getType().toString();
-                    if(item.getItemMeta() instanceof PotionMeta) {
+                    sign.setLine(0, Global.mainConfig.readSetting("shop", "signtitle").toString());
+                    sign.update(true);
 
-                        PotionMeta potionMeta = (PotionMeta)item.getItemMeta();
-                        log.info(String.valueOf(potionMeta.getBasePotionData().getType()));
-
-                        displayItemName = "Potion of " + WordUtils.capitalizeFully(potionMeta.getBasePotionData().getType().toString().replace("_", " "));
-
-                        potionData.put(potionMeta.getBasePotionData().getType().toString(), potionMeta.getCustomEffects());
-
-                    }
-
-
-                    Global.shopConfig.writeShop(String.valueOf(e.getBlock().hashCode()), new Shop("Buy " + displayItemName, item, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable), true);
+                    Global.shopConfig.writeShop(Global.parser.locationToBase64(e.getBlock().getLocation()), new Shop("Buy " + displayItemName, item, Global.parser.signPrice(ws.getLine(2)), Global.parser.signPrice(ws.getLine(3)), buyable, sellable), true);
                     Global.interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
-                    Global.armedSigns.add(signId);
-
                     Global.interact.logServer(LogType.info, "Shop created [Item: " + displayItemName + "]");
                     e.setCancelled(true);
                 }

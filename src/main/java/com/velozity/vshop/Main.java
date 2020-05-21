@@ -61,6 +61,11 @@ public class Main extends JavaPlugin {
         setupChat();
 
         try {
+            if(!mainConfig.setupWorkspace()) {
+                log.severe(String.format("[%s] - Disabled due to insufficient file privileges!", getDescription().getName()));
+                getServer().getPluginManager().disablePlugin(this);
+            }
+
             if(!shopConfig.setupWorkspace()) {
                 log.severe(String.format("[%s] - Disabled due to insufficient file privileges!", getDescription().getName()));
                 getServer().getPluginManager().disablePlugin(this);
@@ -69,20 +74,8 @@ public class Main extends JavaPlugin {
             e.printStackTrace();
         }
 
-        setupSigns();
+        interact.logServer(LogType.info,"Loaded " + Global.shopConfig.getSignIds().size() + " shop signs");
         interact.logServer(LogType.info,"Ready to rock and roll");
-    }
-
-    private boolean setupSigns() {
-        Set<String> shops = shopConfig.getSignIds();
-        Global.armedSigns.clear();
-
-        shops.forEach((signId) -> {
-            Global.armedSigns.add(Integer.valueOf(signId));
-        });
-
-        interact.logServer(LogType.info,"Loaded " + Global.armedSigns.size() + " shop signs");
-        return true;
     }
 
     private boolean setupEconomy() {
@@ -118,7 +111,7 @@ public class Main extends JavaPlugin {
         Player player = (Player) sender;
 
         if (command.getLabel().equals("vshop") || command.getLabel().equals("vs")) {
-            if (args[0].equals("editmode") || args[0].equals("edit") || args[0].equals("em")) {
+            if (((List<String>)mainConfig.readSetting("commands", "editormode")).contains(args[0])) {
                 if (player.hasPermission("vshop.editormode")) {
 
                     if (Global.editModeEnabled.contains(player.getUniqueId())) {
@@ -139,14 +132,6 @@ public class Main extends JavaPlugin {
 
             if (args[0].equals("help")) {
 
-            }
-
-            if (args[0].equals("open")) {
-
-                List<String> lore = new ArrayList<String>();
-                lore.add("A very nice apple");
-
-                shopgui.openShopGUI(Material.APPLE, player, "-12345678", "Shop", lore, 10, 10);
             }
         }
         return false;
