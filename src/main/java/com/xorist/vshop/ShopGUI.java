@@ -13,6 +13,7 @@ import java.util.*;
 import java.util.logging.Logger;
 import com.velozity.vshop.Main;
 import net.milkbowl.vault.economy.Economy;
+import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.HumanEntity;
@@ -28,6 +29,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
+import org.bukkit.potion.Potion;
 
 public class ShopGUI implements Listener {
 
@@ -83,21 +85,27 @@ public class ShopGUI implements Listener {
                 Global.interact.msgPlayer("You cannot buy this item.", player);
             } else {
                 int buyValue = Integer.parseInt(inventory.getItem(4).getItemMeta().getLore().get(0).toLowerCase().split(": ")[1]);
+                int sellValue = Integer.parseInt(inventory.getItem(4).getItemMeta().getLore().get(1).toLowerCase().split(": ")[1]);
                 buyItem(inventory, player, buyValue);
+                updateButtonTotalValues(player, inventory, buyValue, sellValue);
             }
         } else if(clickedItemSlot == 13) {
             if(clickedItem.getType() == Material.BARRIER) {
                 Global.interact.msgPlayer("You cannot sell this item.", player);
             } else {
+                int buyValue = Integer.parseInt(inventory.getItem(4).getItemMeta().getLore().get(0).toLowerCase().split(": ")[1]);
                 int sellValue = Integer.parseInt(inventory.getItem(4).getItemMeta().getLore().get(1).toLowerCase().split(": ")[1]);
                 sellItem(inventory, player, sellValue);
+                updateButtonTotalValues(player, inventory, buyValue, sellValue);
             }
         } else if(clickedItemSlot == 14) {
             if(clickedItem.getType() == Material.BARRIER) {
                 Global.interact.msgPlayer("You cannot sell this item.", player);
             } else {
+                int buyValue = Integer.parseInt(inventory.getItem(4).getItemMeta().getLore().get(0).toLowerCase().split(": ")[1]);
                 int sellValue = Integer.parseInt(inventory.getItem(4).getItemMeta().getLore().get(1).toLowerCase().split(": ")[1]);
                 sellAllItems(inventory, player, sellValue);
+                updateButtonTotalValues(player, inventory, buyValue, sellValue);
             }
         } else if(Global.editModeEnabled.contains(player.getUniqueId()) && clickedItemSlot == 18) {
             List<String> clickedItemLore = clickedItem.getItemMeta().getLore();
@@ -121,17 +129,10 @@ public class ShopGUI implements Listener {
             if(Global.econ.getBalance(player.getName()) > cost) {
 
                 Global.econ.withdrawPlayer(player.getName(), cost);
-
                 ItemStack buyingItem = inventory.getItem(4);
-                ItemMeta buyingItemMeta = buyingItem.getItemMeta();
+                playerInventory.setItem(playerInventory.firstEmpty(), buyingItem);
 
-                if(buyingItemMeta instanceof PotionMeta) {
-                } else {
-                }
-
-                Material buyingItemMaterial = buyingItem.getType();
-                ItemStack itemToDeliver = new ItemStack(buyingItemMaterial, buyingItem.getAmount());
-                playerInventory.setItem(playerInventory.firstEmpty(), itemToDeliver);
+                Global.interact.msgPlayer("You bought " + String.valueOf(inventory.getItem(4).getAmount()) + " " + WordUtils.capitalizeFully(inventory.getItem(4).getType().toString().replace("_", " ") + " for " +  String.valueOf(cost)), player);
 
             } else {
                 Global.interact.msgPlayer("You do not have enough money!", player);
@@ -148,7 +149,7 @@ public class ShopGUI implements Listener {
         // find sell items in player's inventory
         for(int i = 0; i < 36; i++) {
             if(playerInventory.getItem(i) != null) {
-                if(playerInventory.getItem(i).getType() == inventory.getItem(4).getType()) {
+                if(playerInventory.getItem(i) == inventory.getItem(4)) {
                     itemsToSell.add(i);
                 }
             }
@@ -165,11 +166,18 @@ public class ShopGUI implements Listener {
         that was in it, then repeat for next slot. Doing it this way may be more efficient.
          */
 
+        Boolean haveSold = false;
+        int itemsSoldCounter = 0;
+        int totalMoneyGiven = 0;
+
         for(int i: itemsToSell) {
             for(int j = playerInventory.getItem(i).getAmount(); j > 0; j--) {
                 playerInventory.getItem(i).setAmount(playerInventory.getItem(i).getAmount() - 1);
                 Global.econ.depositPlayer(player.getName(), sellValue);
+                totalMoneyGiven += sellValue;
                 numItemsToSell--;
+                itemsSoldCounter++;
+                haveSold = true;
                 if(numItemsToSell == 0) {
                     break;
                 }
@@ -177,6 +185,10 @@ public class ShopGUI implements Listener {
             if(numItemsToSell == 0) {
                 break;
             }
+        }
+
+        if(haveSold) {
+            Global.interact.msgPlayer("You sold " + String.valueOf(itemsSoldCounter) + " " + WordUtils.capitalizeFully(inventory.getItem(4).getType().toString().replace("_", " ")) + " for " +  String.valueOf(totalMoneyGiven), player);
         }
     }
 
@@ -187,7 +199,7 @@ public class ShopGUI implements Listener {
         // find sell items in player's inventory
         for(int i = 0; i < 36; i++) {
             if(playerInventory.getItem(i) != null) {
-                if(playerInventory.getItem(i).getType() == inventory.getItem(4).getType()) {
+                if(playerInventory.getItem(i) == inventory.getItem(4)) {
                     itemsToSell.add(i);
                 }
             }
@@ -197,9 +209,20 @@ public class ShopGUI implements Listener {
             Global.interact.msgPlayer("There are no items to sell.", player);
         }
 
+        int itemsSoldCounter = 0;
+        int totalMoneyGiven = 0;
+        Boolean haveSold = false;
+
         for(int i: itemsToSell) {
+            haveSold = true;
             Global.econ.depositPlayer(player.getName(), sellValue*playerInventory.getItem(i).getAmount());
+            totalMoneyGiven += sellValue * playerInventory.getItem(i).getAmount();
+            itemsSoldCounter += playerInventory.getItem(i).getAmount();
             playerInventory.setItem(i, null);
+        }
+
+        if(haveSold) {
+            Global.interact.msgPlayer("You sold " + String.valueOf(itemsSoldCounter) + " " + WordUtils.capitalizeFully(inventory.getItem(4).getType().toString().replace("_", " ")) + " for " + String.valueOf(totalMoneyGiven), player);
         }
     }
 
@@ -227,7 +250,7 @@ public class ShopGUI implements Listener {
         int totalSellableItems = 0;
         for(int i = 0; i < 36; i++) {
             if(playerInventory.getItem(i) != null) {
-                if(playerInventory.getItem(i).getType() == inventory.getItem(4).getType()) {
+                if(playerInventory.getItem(i) == inventory.getItem(4)) {
                     totalSellableItems += (playerInventory.getItem(i).getAmount());
                 }
             }
@@ -243,16 +266,16 @@ public class ShopGUI implements Listener {
         ItemMeta sellButtonMeta = inventory.getItem(13).getItemMeta();
         ItemMeta sellAllButtonMeta = inventory.getItem(14).getItemMeta();
 
-        buyLore.add("BuyTotal: " + String.valueOf(inventory.getItem(4).getAmount()*buyItemValue));
+        buyLore.add("Total: " + String.valueOf(inventory.getItem(4).getAmount()*buyItemValue));
         buyButtonMeta.setLore(buyLore);
         if(totalSellableItems <= inventory.getItem(4).getAmount()) {
-            sellLore.add("SellTotal: " + String.valueOf(totalSellableItems*sellItemValue));
+            sellLore.add("Total: " + String.valueOf(totalSellableItems*sellItemValue));
             sellButtonMeta.setLore(sellLore);
         } else {
-            sellLore.add("SellTotal: " + String.valueOf(inventory.getItem(4).getAmount()*sellItemValue));
+            sellLore.add("Total: " + String.valueOf(inventory.getItem(4).getAmount()*sellItemValue));
             sellButtonMeta.setLore(sellLore);
         }
-        sellAllLore.add("SellAllTotal: " + String.valueOf(sellAllItemValue));
+        sellAllLore.add("Total: " + String.valueOf(sellAllItemValue));
         sellAllButtonMeta.setLore(sellAllLore);
 
         inventory.getItem(12).setItemMeta(buyButtonMeta);
@@ -304,7 +327,7 @@ public class ShopGUI implements Listener {
         int totalSellableItems = 0;
         for(int i = 0; i < 36; i++) {
             if(playerInventory.getItem(i) != null) {
-                if(playerInventory.getItem(i).getType() == material) {
+                if(playerInventory.getItem(i) == shopItem) {
                     totalSellableItems += (playerInventory.getItem(i).getAmount());
                 }
             }
@@ -320,7 +343,6 @@ public class ShopGUI implements Listener {
             isBuyable = shop.buyable;
             isSellable = shop.sellable;
         }
-
 
         List<String> adminSignID = new ArrayList<String>();
         adminSignID.add(signID);
@@ -345,16 +367,17 @@ public class ShopGUI implements Listener {
         ItemStack buyOperator = new ItemStack(Material.GREEN_STAINED_GLASS);
         ItemMeta buyOperatorMeta = buyOperator.getItemMeta();
         List<String> buyOperatorLore = new ArrayList<>();
-        buyOperatorLore.add("Total: " + String.valueOf(buyPrice));
+        buyOperatorLore.add("Total: " + String.valueOf(buyPrice*shopItem.getAmount()));
         buyOperatorMeta.setLore(buyOperatorLore);
+
 
         ItemStack sellOperator = new ItemStack(Material.RED_STAINED_GLASS);
         ItemMeta sellOperatorMeta = sellOperator.getItemMeta();
         List<String> sellOperatorLore = new ArrayList<>();
-        if(totalSellableItems > 0) {
-            sellOperatorLore.add("Total: " + String.valueOf(sellPrice));
+        if(totalSellableItems > shopItem.getAmount()) {
+            sellOperatorLore.add("Total: " + String.valueOf(sellPrice*shopItem.getAmount()));
         } else {
-            sellOperatorLore.add("Total: 0");
+            sellOperatorLore.add("Total: " + String.valueOf(sellPrice*totalSellableItems));
         }
         sellOperatorMeta.setLore(sellOperatorLore);
 
