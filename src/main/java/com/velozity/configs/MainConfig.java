@@ -10,9 +10,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class MainConfig {
@@ -24,7 +22,7 @@ public class MainConfig {
     private File mainConfigFile;
 
     public Boolean setupWorkspace() throws IOException {
-        createShopsConfig();
+        createMainConfig();
         return true;
     }
 
@@ -32,7 +30,7 @@ public class MainConfig {
         return this.mainConfig;
     }
 
-    private void createShopsConfig() throws IOException {
+    private void createMainConfig() throws IOException {
         mainConfigFile = new File(workPath, "config.yml");
         if (!mainConfigFile.exists()) {
             mainConfigFile.getParentFile().mkdirs();
@@ -42,27 +40,47 @@ public class MainConfig {
         mainConfig = new YamlConfiguration();
         try {
             mainConfig.load(mainConfigFile);
+            writeDefaultSettings();
         } catch (IOException | InvalidConfigurationException e) {
             Global.interact.logServer(LogType.error, "Could not load mainConfig file! Try restarting or checking file permissions");
         }
     }
 
-    public Object readSetting(String key) {
+    public Object readSetting(String section, String key) {
         try {
             mainConfig.load(mainConfigFile);
         } catch (IOException | InvalidConfigurationException e) {
             Global.interact.logServer(LogType.error,"Something went wrong when trying to read setting: " + key + "in your config.yml");
         }
 
-        return getMainConfig().getConfigurationSection("settings").get(key);
+        return getMainConfig().getConfigurationSection("settings." + section).get(key);
     }
 
     public void updateSetting(String key, Object value) throws IOException {
+        if(getMainConfig().getConfigurationSection("settings").isConfigurationSection(key)) {
+            getMainConfig().set("settings." + key, null);
+            getMainConfig().save(mainConfigFile);
+        }
+
         getMainConfig().addDefault("settings." + key, value);
         getMainConfig().options().copyDefaults(true);
         getMainConfig().save(mainConfigFile);
+    }
 
-        createShopsConfig();
+    public void writeDefaultSettings() throws IOException {
+        // Shop settings
+        getMainConfig().addDefault("settings.shop.signtitle", "[shop]");
+        getMainConfig().addDefault("settings.shop.currencysymbol", "$");
+        getMainConfig().addDefault("settings.shop.sellmultiple", false);
+
+        // System settings
+        getMainConfig().addDefault("settings.system.filelogging", false);
+
+        // Command customization
+        getMainConfig().addDefault("settings.commands.editormode", Arrays.asList("editmode", "em", "edit"));
+
+        getMainConfig().options().copyDefaults(true);
+        getMainConfig().save(mainConfigFile);
     }
 }
 
