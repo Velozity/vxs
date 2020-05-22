@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 public class Parsers {
     public Integer signPrice(String line) {
 
-        String toParse = line.toLowerCase().replace("b", "").replace("s", "").replace("$", "").replace("-", "").replace(" ", "").trim();
+        String toParse = line.toLowerCase().replaceAll("[^\\.0123456789]","").trim();
         if(toParse.isEmpty()) {
             return -2;
         }

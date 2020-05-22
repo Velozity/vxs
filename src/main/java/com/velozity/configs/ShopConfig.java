@@ -51,7 +51,10 @@ public class ShopConfig {
     public void writeShop(String signId, Shop shop, Boolean overwrite) throws IOException {
         if(overwrite) {
             if(getSignIds().contains(signId)) {
-                removeShop(signId);
+                getShopsConfig().set("shops." + signId, shop.serialize());
+                getShopsConfig().options().copyDefaults(true);
+                getShopsConfig().save(shopsConfigFile);
+                return;
             }
         }
 

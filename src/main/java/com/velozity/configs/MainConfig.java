@@ -57,7 +57,7 @@ public class MainConfig {
     }
 
     public void updateSetting(String key, Object value) throws IOException {
-        if(getMainConfig().getConfigurationSection("settings").isConfigurationSection(key)) {
+        if(!getMainConfig().getConfigurationSection("settings").isConfigurationSection(key)) {
             getMainConfig().set("settings." + key, null);
             getMainConfig().save(mainConfigFile);
         }
@@ -69,14 +69,18 @@ public class MainConfig {
 
     public void writeDefaultSettings() throws IOException {
         // Shop settings
-        getMainConfig().addDefault("settings.shop.signtitle", "§5[shop]");
+        getMainConfig().addDefault("settings.shop.signtitle", "§b[shop]");
         getMainConfig().addDefault("settings.shop.currencysymbol", "$");
         getMainConfig().addDefault("settings.shop.buyprefix", "§4B");
         getMainConfig().addDefault("settings.shop.sellprefix", "§2S");
         getMainConfig().addDefault("settings.shop.sellmultiple", false);
 
+        getMainConfig().addDefault("settings.shop.guititle", "Buy {item}");
+
         // System settings
         getMainConfig().addDefault("settings.system.filelogging", false);
+        getMainConfig().addDefault("settings.system.maxloggingsize", "10");
+        getMainConfig().addDefault("settings.system.stats", true);
 
         // Command customization
         getMainConfig().addDefault("settings.commands.editormode", Arrays.asList("editmode", "em", "edit"));

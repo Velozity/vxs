@@ -4,6 +4,7 @@ import com.velozity.configs.MainConfig;
 import com.velozity.configs.ShopConfig;
 import com.velozity.events.EventHandlers;
 import com.velozity.helpers.Interactions;
+import com.velozity.types.LogType;
 import com.velozity.types.Shop;
 import com.velozity.vshop.Global;
 import com.xorist.vshop.ShopGUI;
@@ -120,19 +121,25 @@ public class ShopGUI implements Listener {
         if(playerInventory.firstEmpty() != -1) {
             if(Global.econ.getBalance(player.getName()) > cost) {
 
-                Global.econ.withdrawPlayer(player.getName(), cost);
+                if(Global.econ.withdrawPlayer(player.getName(), cost).transactionSuccess()) {
 
-                ItemStack buyingItem = inventory.getItem(4);
-                ItemMeta buyingItemMeta = buyingItem.getItemMeta();
+                    ItemStack buyingItem = inventory.getItem(4);
+                    ItemMeta buyingItemMeta = buyingItem.getItemMeta();
 
-                if(buyingItemMeta instanceof PotionMeta) {
-                } else {
+                    if (buyingItemMeta instanceof PotionMeta) {
+                    } else {
+                    }
+
+                    Material buyingItemMaterial = buyingItem.getType();
+                    ItemStack itemToDeliver = new ItemStack(buyingItemMaterial, buyingItem.getAmount());
+                    playerInventory.setItem(playerInventory.firstEmpty(), itemToDeliver);
+
+                    try {
+                        Global.statsWriter.addTotalIncome(cost);
+                    } catch (IOException e){
+                        interact.logServer(LogType.error, "Failed to add stat to Total Income! (Disable stats if this persists with no solution)");
+                    }
                 }
-
-                Material buyingItemMaterial = buyingItem.getType();
-                ItemStack itemToDeliver = new ItemStack(buyingItemMaterial, buyingItem.getAmount());
-                playerInventory.setItem(playerInventory.firstEmpty(), itemToDeliver);
-
             } else {
                 Global.interact.msgPlayer("You do not have enough money!", player);
             }
@@ -169,6 +176,13 @@ public class ShopGUI implements Listener {
             for(int j = playerInventory.getItem(i).getAmount(); j > 0; j--) {
                 playerInventory.getItem(i).setAmount(playerInventory.getItem(i).getAmount() - 1);
                 Global.econ.depositPlayer(player.getName(), sellValue);
+
+                try {
+                    Global.statsWriter.addTotalExpenditure(sellValue);
+                } catch (IOException e){
+                    interact.logServer(LogType.error, "Failed to add stat to Total Expenditure! (Disable stats if this persists with no solution)");
+                }
+
                 numItemsToSell--;
                 if(numItemsToSell == 0) {
                     break;
@@ -321,10 +335,6 @@ public class ShopGUI implements Listener {
             isSellable = shop.sellable;
         }
 
-
-        List<String> adminSignID = new ArrayList<String>();
-        adminSignID.add(signID);
-
         if(!Global.editModeEnabled.contains(player.getUniqueId())) {
             inv = Bukkit.createInventory(null, 18, title);
         } else {
@@ -450,7 +460,7 @@ public class ShopGUI implements Listener {
                 adminBuyOperatorMeta.setDisplayName("BUY: OFF");
             }
 
-            adminBuyOperatorMeta.setLore(adminSignID);
+            adminBuyOperatorMeta.setLocalizedName(signID);
             adminBuyOperator.setItemMeta(adminBuyOperatorMeta);
             inv.setItem(18, adminBuyOperator);
 
@@ -460,7 +470,7 @@ public class ShopGUI implements Listener {
             } else {
                 adminSellOperatorMeta.setDisplayName("SELL: OFF");
             }
-            adminSellOperatorMeta.setLore(adminSignID);
+            adminSellOperatorMeta.setLocalizedName(signID);
             adminSellOperator.setItemMeta(adminSellOperatorMeta);
             inv.setItem(26, adminSellOperator);
         }
