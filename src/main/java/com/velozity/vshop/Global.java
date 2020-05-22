@@ -10,10 +10,9 @@ import com.xorist.vshop.ShopGUI;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class Global {
@@ -34,6 +33,8 @@ public class Global {
 
     public static List<UUID> editModeEnabled = new ArrayList<>();
     public static List<String> pendingRemoveSigns = new ArrayList<>();
+    public static Map<Player, String> pendingNewBuyPrice = new HashMap<>();
+    public static Map<Player, String> pendingNewSellPrice = new HashMap<>();
 
     public static final String _permCreateShop = "vshop.createshop";
     public static final String _permDestroyShop = "vshop.destroyshop";

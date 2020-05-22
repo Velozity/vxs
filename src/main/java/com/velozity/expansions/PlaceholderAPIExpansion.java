@@ -101,13 +101,18 @@ public class PlaceholderAPIExpansion extends PlaceholderExpansion {
         }
 
 
+        if(identifier.equals("transactions")){
+            return Global.statsWriter.readStat("transactions");
+        }
+
+
         if(identifier.equals("totalincome")){
-            return "placeholder1 works";
+            return Global.statsWriter.readStat("totalincome");
         }
 
 
         if(identifier.equals("totalexpenditure")){
-            return "placeholder2 works";
+            return Global.statsWriter.readStat("totalexpenditure");
         }
 
         // We return null if an invalid placeholder (f.e. %example_placeholder3%)

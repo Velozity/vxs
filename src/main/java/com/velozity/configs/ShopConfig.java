@@ -1,6 +1,7 @@
 package com.velozity.configs;
 
 import com.velozity.types.Shop;
+import com.velozity.vshop.Global;
 import com.velozity.vshop.Main;
 
 import lombok.Getter;
@@ -9,6 +10,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionData;
 import org.bukkit.potion.PotionEffect;
 
@@ -44,19 +46,15 @@ public class ShopConfig {
         }
     }
 
-    public void writeShop(String signId, Shop shop, Boolean overwrite) throws IOException {
+    public void writeShop(String signId, Shop shop) throws IOException {
         try {
             shopsConfig.load(shopsConfigFile);
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
-        if(overwrite) {
-            if(signIdExists(signId)) {
-                shopsConfig.set("shops." + signId, shop.serialize());
-                shopsConfig.options().copyDefaults(true);
-                shopsConfig.save(shopsConfigFile);
-                return;
-            }
+
+        if(signIdExists(signId)) {
+            removeShop(signId);
         }
 
         shopsConfig.set("shops." + signId, shop.serialize());
@@ -148,6 +146,56 @@ public class ShopConfig {
         }
 
         return shops;
+    }
+
+    public void initiateBuyPriceChangeProcess(String signId, Player player) {
+        if(player.hasPermission("vshop.editormode")) {
+            if(signIdExists(signId)) {
+                Global.pendingNewBuyPrice.put(player, signId);
+                Global.interact.msgPlayer("Type /vs buy <amount> - To change this items buy price.", player);
+                new java.util.Timer().schedule(
+                        new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                if(Global.pendingNewBuyPrice.containsKey(player)){
+                                    Global.pendingNewBuyPrice.remove(player);
+                                    Global.interact.msgPlayer("No buy price entered - Timed out", player);
+                                }
+                            }
+                        },
+                        30000
+                );
+            } else {
+                Global.interact.msgPlayer("That shop cannot be found", player);
+            }
+        } else {
+            Global.interact.msgPlayer("You don't have permission to do this!", player);
+        }
+    }
+
+    public void initiateSellPriceChangeProcess(String signId, Player player) {
+        if(player.hasPermission("vshop.editormode")) {
+            if(signIdExists(signId)) {
+                Global.pendingNewSellPrice.put(player, signId);
+                Global.interact.msgPlayer("Type /vs sell <amount> - To change this items sell price.", player);
+                new java.util.Timer().schedule(
+                        new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                if(Global.pendingNewSellPrice.containsKey(player)){
+                                    Global.pendingNewSellPrice.remove(player);
+                                    Global.interact.msgPlayer("No sell price entered - Timed out", player);
+                                }
+                            }
+                        },
+                        30000
+                );
+            } else {
+                Global.interact.msgPlayer("That shop cannot be found!", player);
+            }
+        } else {
+            Global.interact.msgPlayer("You don't have permission to do this!", player);
+        }
     }
 }
 

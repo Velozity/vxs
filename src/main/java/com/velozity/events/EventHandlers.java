@@ -184,7 +184,7 @@ public class EventHandlers implements Listener {
                     sign.update(true);
 
                     String title = ((String)Global.mainConfig.readSetting("shop", "guititle")).replace("{item}", displayItemName);
-                    Global.shopConfig.writeShop(parser.locationToBase64(e.getBlock().getLocation()), new Shop(title, item, parser.signPrice(ws.getLine(2)), parser.signPrice(ws.getLine(3)), buyable, sellable), true);
+                    Global.shopConfig.writeShop(parser.locationToBase64(e.getBlock().getLocation()), new Shop(title, item, parser.signPrice(ws.getLine(2)), parser.signPrice(ws.getLine(3)), buyable, sellable));
                     interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
                     interact.logServer(LogType.info, "Shop created by " + e.getPlayer().getDisplayName() + " [Item: " + displayItemName + "]");
                     e.setCancelled(true);

@@ -16,6 +16,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 public class Interactions {
+
     public void logServer(LogType type, String msg) {
         String logType = "";
 
@@ -88,6 +89,7 @@ public class Interactions {
             Global.getMainInstance.getServer().getConsoleSender().sendMessage(ChatColor.DARK_RED + "[VShop] " + "UNABLE TO WRITE TO LOG FILE! PLEASE DISABLE FILE LOGGING OR FIX FILE PERMISSIONS.");
         }
     }
+
     public void msgPlayer(String msg, Player player) {
         player.sendMessage("§4[VShop]§r " + msg);
     }
@@ -95,4 +97,5 @@ public class Interactions {
     public void msgPlayer(String[] msg, Player player) {
         player.sendMessage(ObjectArrays.concat("§4[VShop]§r", msg));
     }
+
 }
