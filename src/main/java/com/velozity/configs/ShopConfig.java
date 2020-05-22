@@ -29,10 +29,6 @@ public class ShopConfig {
         return true;
     }
 
-    public FileConfiguration getShopsConfig() {
-        return this.shopsConfig;
-    }
-
     private void createShopsConfig() throws IOException {
         shopsConfigFile = new File(workPath, "shops.yml");
         if (!shopsConfigFile.exists()) {
@@ -49,18 +45,29 @@ public class ShopConfig {
     }
 
     public void writeShop(String signId, Shop shop, Boolean overwrite) throws IOException {
+        try {
+            shopsConfig.load(shopsConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
         if(overwrite) {
-            if(getSignIds().contains(signId)) {
-                getShopsConfig().set("shops." + signId, shop.serialize());
-                getShopsConfig().options().copyDefaults(true);
-                getShopsConfig().save(shopsConfigFile);
+            if(signIdExists(signId)) {
+                shopsConfig.set("shops." + signId, shop.serialize());
+                shopsConfig.options().copyDefaults(true);
+                shopsConfig.save(shopsConfigFile);
                 return;
             }
         }
 
-        getShopsConfig().addDefault("shops." + signId, shop.serialize());
-        getShopsConfig().options().copyDefaults(true);
-        getShopsConfig().save(shopsConfigFile);
+        shopsConfig.set("shops." + signId, shop.serialize());
+        shopsConfig.options().copyDefaults(true);
+        shopsConfig.save(shopsConfigFile);
+
+        try {
+            shopsConfig.load(shopsConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
     }
 
     public void removeShop(String signId) throws IOException {
@@ -70,8 +77,12 @@ public class ShopConfig {
             e.printStackTrace();
         }
 
-        getShopsConfig().set("shops." + signId, null);
-        getShopsConfig().save(shopsConfigFile);
+            System.out.println("Before:" + shopsConfig.get("shops." + signId));
+            shopsConfig.set("shops." + signId, null); // the part that isn't working as expected
+            System.out.println("After:" + shopsConfig.get("shops." + signId));
+            shopsConfig.save(shopsConfigFile);
+            System.out.println("Saved:" + shopsConfig.get("shops." + signId));
+
     }
 
     public Set<String> getSignIds() {
@@ -81,20 +92,20 @@ public class ShopConfig {
             e.printStackTrace();
         }
 
-        if(getShopsConfig().saveToString().trim().equals("")) {
+        if(shopsConfig.saveToString().trim().equals("")) {
             return Collections.emptySet();
         }
 
-        return getShopsConfig().getConfigurationSection("shops").getKeys(false);
+        return shopsConfig.getConfigurationSection("shops").getKeys(false);
     }
 
     public Boolean signIdExists(String signId) {
 
-        if(getShopsConfig().saveToString().trim().equals("")) {
+        if(shopsConfig.saveToString().trim().equals("")) {
             return false;
         }
 
-        return getShopsConfig().getConfigurationSection("shops").getKeys(false).contains(signId.toString());
+        return shopsConfig.getConfigurationSection("shops").getKeys(false).contains(signId);
     }
 
     public Shop getShop(String signId) {
@@ -105,12 +116,12 @@ public class ShopConfig {
         }
 
         Shop shop = new Shop();
-        shop.title = getShopsConfig().getConfigurationSection("shops." + signId).getString("title");
-        shop.item = getShopsConfig().getConfigurationSection("shops." + signId).getItemStack("item");
-        shop.buyprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("buyprice");
-        shop.sellprice = getShopsConfig().getConfigurationSection("shops." + signId).getInt("sellprice");
-        shop.buyable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("buyable");
-        shop.sellable = getShopsConfig().getConfigurationSection("shops." + signId).getBoolean("sellable");
+        shop.title = shopsConfig.getConfigurationSection("shops." + signId).getString("title");
+        shop.item = shopsConfig.getConfigurationSection("shops." + signId).getItemStack("item");
+        shop.buyprice = shopsConfig.getConfigurationSection("shops." + signId).getInt("buyprice");
+        shop.sellprice = shopsConfig.getConfigurationSection("shops." + signId).getInt("sellprice");
+        shop.buyable = shopsConfig.getConfigurationSection("shops." + signId).getBoolean("buyable");
+        shop.sellable = shopsConfig.getConfigurationSection("shops." + signId).getBoolean("sellable");
 
         return shop;
     }
@@ -123,15 +134,15 @@ public class ShopConfig {
         }
 
         Map<String, Shop> shops = new LinkedHashMap<>();
-        for (String key : getShopsConfig().getConfigurationSection("shops").getKeys(false)) {
+        for (String key : shopsConfig.getConfigurationSection("shops").getKeys(false)) {
             Shop shop = new Shop();
 
-            shop.title = getShopsConfig().getConfigurationSection("shops." + key).getString("title");
-            shop.buyprice = getShopsConfig().getConfigurationSection("shops." + key).getInt("buyprice");
-            shop.sellprice = getShopsConfig().getConfigurationSection("shops." + key).getInt("sellprice");
-            shop.buyable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("buyable");
-            shop.sellable = getShopsConfig().getConfigurationSection("shops." + key).getBoolean("sellable");
-            shop.item = getShopsConfig().getConfigurationSection("shops." + key).getItemStack("item");
+            shop.title = shopsConfig.getConfigurationSection("shops." + key).getString("title");
+            shop.buyprice = shopsConfig.getConfigurationSection("shops." + key).getInt("buyprice");
+            shop.sellprice = shopsConfig.getConfigurationSection("shops." + key).getInt("sellprice");
+            shop.buyable = shopsConfig.getConfigurationSection("shops." + key).getBoolean("buyable");
+            shop.sellable = shopsConfig.getConfigurationSection("shops." + key).getBoolean("sellable");
+            shop.item = shopsConfig.getConfigurationSection("shops." + key).getItemStack("item");
 
             shops.put(key, shop);
         }

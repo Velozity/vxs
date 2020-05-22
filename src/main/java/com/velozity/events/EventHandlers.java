@@ -42,9 +42,9 @@ public class EventHandlers implements Listener {
 
     private static final Logger log = Logger.getLogger("Minecraft");
     private static final ShopConfig shopConfig = Global.shopConfig;
-    private static final Parsers parser = Global.parser;
-    private static final Interactions interact = Global.interact;
-    private static final ShopGUI shopgui = Global.shopgui;
+    Parsers parser = Global.parser;
+    Interactions interact = Global.interact;
+    ShopGUI shopgui = Global.shopgui;
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
@@ -52,13 +52,13 @@ public class EventHandlers implements Listener {
         Action action = e.getAction();
         Block clickedBlock = e.getClickedBlock();
         if(action == Action.RIGHT_CLICK_BLOCK) {
-            if (clickedBlock.getType().equals(Material.SIGN) || clickedBlock.getType().equals(Material.WALL_SIGN) || clickedBlock.getType().equals(Material.LEGACY_SIGN_POST)) {
+            if (clickedBlock.getType().equals(Material.OAK_SIGN)) {
                 String signId = parser.locationToBase64(clickedBlock.getLocation());
-                Set<String> signIds = shopConfig.getSignIds();
+                Set<String> signIds = Global.shopConfig.getSignIds();
 
                 // If sign being hit is in a registered sign shop & its a normal user
                 if(signIds.contains(String.valueOf(signId)) /*&& !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())*/) {
-                    Shop shop = shopConfig.getShop(signId);
+                    Shop shop = Global.shopConfig.getShop(signId);
                     shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), signId, shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
                     e.setCancelled(true);
                     return;
@@ -70,13 +70,14 @@ public class EventHandlers implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) throws IOException {
 
-        if (e.getBlock().getType().equals(Material.SIGN) || e.getBlock().getType().equals(Material.WALL_SIGN) || e.getBlock().getType().equals(Material.LEGACY_SIGN_POST)) {
+        if (e.getBlock().getType().equals(Material.OAK_SIGN)) {
             org.bukkit.block.Sign ws = (org.bukkit.block.Sign)e.getBlock().getState();
-            String signId = parser.locationToBase64(e.getBlock().getLocation());
+            String signId = parser.locationToBase64(e.getBlock().getState().getLocation());
 
+            Boolean signIdExists = Global.shopConfig.signIdExists(signId);
             // If sign being hit is in a registered sign shop & its a normal user
-            if(shopConfig.signIdExists(signId) && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
-                Shop shop = shopConfig.getShops().get(signId);
+            if(signIdExists && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
+                Shop shop = Global.shopConfig.getShop(signId);
                 shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), signId, shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
                 e.setCancelled(true);
                 return;
@@ -85,7 +86,7 @@ public class EventHandlers implements Listener {
             // If in editmode
             if(Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
                     // If the sign is already armed
-                    if(shopConfig.signIdExists(signId)) {
+                    if(signIdExists) {
                         if(Global.pendingRemoveSigns.contains(signId)) {
 
                             // Does user have permission to destroy shops?
@@ -97,10 +98,10 @@ public class EventHandlers implements Listener {
 
                             // REMOVE SIGN SHOP
                             interact.msgPlayer("Shop removed", e.getPlayer());
-                            interact.logServer(LogType.info, "Shop removed by " + e.getPlayer().getDisplayName() + " [Item: " + WordUtils.capitalizeFully(shopConfig.getShop(signId).item.getType().toString().replace("_", " ")) + "]");
-                            Global.shopConfig.removeShop(signId);
+                            //interact.logServer(LogType.info, "Shop removed by " + e.getPlayer().getDisplayName() + " [Item: " + WordUtils.capitalizeFully(Global.shopConfig.getShop(signId).item.getType().toString().replace("_", " ")) + "]");
+                            System.out.println("eventhandlers: " + signId);
+                            shopConfig.removeShop(signId);
                             Global.pendingRemoveSigns.remove(signId);
-
                             e.setCancelled(false);
                             return;
                         } else {
@@ -183,7 +184,7 @@ public class EventHandlers implements Listener {
                     sign.update(true);
 
                     String title = ((String)Global.mainConfig.readSetting("shop", "guititle")).replace("{item}", displayItemName);
-                    shopConfig.writeShop(parser.locationToBase64(e.getBlock().getLocation()), new Shop(title, item, parser.signPrice(ws.getLine(2)), parser.signPrice(ws.getLine(3)), buyable, sellable), true);
+                    Global.shopConfig.writeShop(parser.locationToBase64(e.getBlock().getLocation()), new Shop(title, item, parser.signPrice(ws.getLine(2)), parser.signPrice(ws.getLine(3)), buyable, sellable), true);
                     interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
                     interact.logServer(LogType.info, "Shop created by " + e.getPlayer().getDisplayName() + " [Item: " + displayItemName + "]");
                     e.setCancelled(true);
