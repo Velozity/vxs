@@ -83,6 +83,7 @@ public class Interactions {
             writer.write(msg);
             writer.newLine();   //Add new line
             writer.close();
+
         } catch (IOException ex) {
             Global.getMainInstance.getServer().getConsoleSender().sendMessage(ChatColor.DARK_RED + "[VShop] " + "UNABLE TO WRITE TO LOG FILE! PLEASE DISABLE FILE LOGGING OR FIX FILE PERMISSIONS.");
         }
