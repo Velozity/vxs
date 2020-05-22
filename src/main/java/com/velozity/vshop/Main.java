@@ -3,12 +3,14 @@ package com.velozity.vshop;
 import com.velozity.configs.MainConfig;
 import com.velozity.configs.ShopConfig;
 import com.velozity.events.EventHandlers;
+
 import com.velozity.expansions.PlaceholderAPIExpansion;
 import com.velozity.helpers.Interactions;
 import com.velozity.types.LogType;
 import com.velozity.types.Shop;
 import com.xorist.vshop.ShopGUI;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
@@ -24,6 +26,7 @@ import org.bukkit.block.data.type.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -92,12 +95,12 @@ public class Main extends JavaPlugin {
     }
 
     public void validateSigns() {
-        shopConfig.getSignIds()
+        Global.shopConfig.getSignIds()
                 .forEach(signId -> {
-                   if(Global.parser.base64ToLocation(signId).getBlock().isEmpty() || !(Global.parser.base64ToLocation(signId).getBlock().getState() instanceof Sign)) {
+                   if(Global.parser.base64ToLocation(signId).getBlock().isEmpty()) {
                        try {
-                           interact.logServer(LogType.info, "Detected missing sign from world! Deleting its shop [Item: " + shopConfig.getShop(signId).item.getType().name() + "]");
-                           shopConfig.removeShop(signId);
+                           interact.logServer(LogType.info, "Detected missing sign from world! Deleting its shop [Item: " + Global.shopConfig.getShop(signId).item.getType().name() + "]");
+                           Global.shopConfig.removeShop(signId);
                        } catch (IOException e) {
                            interact.logServer(LogType.error, "Failed to remove a shop that was attached to a missing sign");
                        }
@@ -159,11 +162,16 @@ public class Main extends JavaPlugin {
                 }
             }
 
-            if(args[0].equals("stats")) {
+            else if(args[0].equals("stats")) {
                 if(player.hasPermission(Global._permStats)) {
+                    if(!(Boolean)mainConfig.readSetting("system", "stats")) {
+                        interact.msgPlayer("Stats is disabled on this server", player);
+                        return true;
+                    }
+
                     interact.msgPlayer(
                             new String[] {
-                                    "Shop Count: " + shopConfig.getSignIds().size(),
+                                    "Shop Count: " + Global.shopConfig.getSignIds().size(),
                                     "Total Buys: " + Global.statsWriter.readStat("buycount"),
                                     "Total Sells: " + Global.statsWriter.readStat("sellcount"),
                                     "Total Transactions: " + Global.statsWriter.readStat("transactions"),
@@ -177,7 +185,7 @@ public class Main extends JavaPlugin {
                 }
             }
 
-            if (args[0].equals("help")) {
+            else if (args[0].equals("help")) {
                 List<String> toPrint = new ArrayList<>();
 
                 if (player.hasPermission(Global._permEditorMode))
@@ -188,6 +196,10 @@ public class Main extends JavaPlugin {
 
                 toPrint.add("/vs help - Show this message");
                 interact.msgPlayer(toPrint.toArray(new String[0]), player);
+            }
+
+            else {
+                interact.msgPlayer("Invalid command! Use /help", player);
             }
         }
         return false;
