@@ -7,6 +7,7 @@ import lombok.Getter;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +63,7 @@ public class MainConfig {
             getMainConfig().save(mainConfigFile);
         }
 
-        getMainConfig().addDefault("settings." + key, value);
+        getMainConfig().set("settings." + key, value);
         getMainConfig().options().copyDefaults(true);
         getMainConfig().save(mainConfigFile);
     }
@@ -80,9 +81,6 @@ public class MainConfig {
         getMainConfig().addDefault("settings.system.filelogging", false);
         getMainConfig().addDefault("settings.system.maxloggingsize", 10);
         getMainConfig().addDefault("settings.system.stats", true);
-
-        // Command customization
-        getMainConfig().addDefault("settings.commands.editormode", Arrays.asList("editmode", "em", "edit"));
 
         getMainConfig().options().copyDefaults(true);
         getMainConfig().save(mainConfigFile);

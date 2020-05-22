@@ -22,7 +22,7 @@ import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.block.data.type.Sign;
+import org.bukkit.block.Sign;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -143,7 +143,6 @@ public class Main extends JavaPlugin {
         if (command.getLabel().equals("vshop") || command.getLabel().equals("vs")) {
             if (args[0].contains("editmode") || args[0].contains("em") || args[0].contains("edit")) {
                 if (player.hasPermission(Global._permEditorMode)) {
-
                     if (Global.editModeEnabled.contains(player.getUniqueId())) {
                         interact.msgPlayer("Editor mode disabled!", player);
                         Global.editModeEnabled.remove(player.getUniqueId());
@@ -161,7 +160,71 @@ public class Main extends JavaPlugin {
                     interact.msgPlayer("You do not have access to this command", player);
                 }
             }
+            else if (args[0].contains("buy")) {
+                if (Global.pendingNewBuyPrice.containsKey(player)) {
+                    if (Global.parser.signPrice(args[1]) > -1) {
+                        String signId = Global.pendingNewBuyPrice.get(player);
+                        if (!Global.parser.base64ToLocation(signId).getBlock().isEmpty()) {
+                            Sign sign = (Sign) Global.parser.base64ToLocation(signId).getBlock().getState();
+                            Integer price = Global.parser.signPrice(args[1]);
 
+                            Shop shop = Global.shopConfig.getShop(signId);
+                            shop.buyprice = price;
+
+                            try {
+                                Global.shopConfig.writeShop(signId, shop);
+                            } catch (IOException e) {
+                                interact.msgPlayer("An error occured making this change", player);
+                                return true;
+                            }
+
+                            sign.setLine(2, Global.mainConfig.readSetting("shop", "buyprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
+                            sign.update(true);
+                            Global.pendingNewBuyPrice.remove(player);
+                        }
+                    } else {
+                        interact.msgPlayer("You entered an invalid amount", player);
+                        Global.pendingNewBuyPrice.remove(player);
+                        return true;
+                    }
+                } else {
+                    interact.msgPlayer("You have not selected a shop to change buy price for. Try to right click a sign shop in editor mode", player);
+                    return true;
+                }
+            }
+            else if (args[0].contains("sell")) {
+                if (Global.pendingNewSellPrice.containsKey(player)) {
+                    if (Global.parser.signPrice(args[1]) > -1) {
+                        String signId = Global.pendingNewSellPrice.get(player);
+                        if (!Global.parser.base64ToLocation(signId).getBlock().isEmpty()) {
+                            Sign sign = (Sign)Global.parser.base64ToLocation(signId).getBlock().getState();
+                            Integer price = Global.parser.signPrice(args[1]);
+
+                            Shop shop = Global.shopConfig.getShop(signId);
+                            shop.sellprice = price;
+
+                            try {
+                                Global.shopConfig.writeShop(signId, shop);
+                            } catch (IOException e) {
+                                interact.msgPlayer("An error occurred making this change", player);
+                                Global.pendingNewSellPrice.remove(player);
+                                return true;
+                            }
+
+                            sign.setLine(3, Global.mainConfig.readSetting("shop", "sellprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
+                            sign.update(true);
+                            Global.pendingNewSellPrice.remove(player);
+                        }
+                    } else {
+                        interact.msgPlayer("You entered an invalid amount", player);
+                        Global.pendingNewSellPrice.remove(player);
+                        return true;
+                    }
+                } else {
+                    interact.msgPlayer("You have not selected a shop to change buy price for. Try to right click a sign shop in editor mode", player);
+                    return true;
+                }
+            }
             else if(args[0].equals("stats")) {
                 if(player.hasPermission(Global._permStats)) {
                     if(!(Boolean)mainConfig.readSetting("system", "stats")) {
@@ -184,7 +247,6 @@ public class Main extends JavaPlugin {
                     interact.msgPlayer("You do not have access to this command", player);
                 }
             }
-
             else if (args[0].equals("help")) {
                 List<String> toPrint = new ArrayList<>();
 
