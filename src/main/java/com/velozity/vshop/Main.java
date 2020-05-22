@@ -96,7 +96,7 @@ public class Main extends JavaPlugin {
                 .forEach(signId -> {
                    if(Global.parser.base64ToLocation(signId).getBlock().isEmpty() || !(Global.parser.base64ToLocation(signId).getBlock().getState() instanceof Sign)) {
                        try {
-                           interact.logServer(LogType.info, "Detected missing sign from world! Deleting its shop... [Item: " + shopConfig.getShop(signId).item.getType().name() + "]");
+                           interact.logServer(LogType.info, "Detected missing sign from world! Deleting its shop [Item: " + shopConfig.getShop(signId).item.getType().name() + "]");
                            shopConfig.removeShop(signId);
                        } catch (IOException e) {
                            interact.logServer(LogType.error, "Failed to remove a shop that was attached to a missing sign");

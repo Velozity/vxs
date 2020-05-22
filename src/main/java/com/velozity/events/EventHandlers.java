@@ -97,8 +97,8 @@ public class EventHandlers implements Listener {
 
                             // REMOVE SIGN SHOP
                             interact.msgPlayer("Shop removed", e.getPlayer());
-                            interact.logServer(LogType.info, "Shop removed by " + e.getPlayer().getDisplayName() + " [Item: " + shopConfig.getShop(signId).item.getType().toString() + "]");
-                            shopConfig.removeShop(signId);
+                            interact.logServer(LogType.info, "Shop removed by " + e.getPlayer().getDisplayName() + " [Item: " + WordUtils.capitalizeFully(shopConfig.getShop(signId).item.getType().toString().replace("_", " ")) + "]");
+                            Global.shopConfig.removeShop(signId);
                             Global.pendingRemoveSigns.remove(signId);
 
                             e.setCancelled(false);
@@ -185,7 +185,7 @@ public class EventHandlers implements Listener {
                     String title = ((String)Global.mainConfig.readSetting("shop", "guititle")).replace("{item}", displayItemName);
                     shopConfig.writeShop(parser.locationToBase64(e.getBlock().getLocation()), new Shop(title, item, parser.signPrice(ws.getLine(2)), parser.signPrice(ws.getLine(3)), buyable, sellable), true);
                     interact.msgPlayer("Sign armed and shop ready [Item: " + displayItemName + "]", e.getPlayer());
-                    interact.logServer(LogType.info, "Shop created [Item: " + displayItemName + "]");
+                    interact.logServer(LogType.info, "Shop created by " + e.getPlayer().getDisplayName() + " [Item: " + displayItemName + "]");
                     e.setCancelled(true);
             }
         }

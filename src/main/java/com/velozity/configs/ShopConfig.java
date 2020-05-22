@@ -64,6 +64,12 @@ public class ShopConfig {
     }
 
     public void removeShop(String signId) throws IOException {
+        try {
+            shopsConfig.load(shopsConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            e.printStackTrace();
+        }
+
         getShopsConfig().set("shops." + signId, null);
         getShopsConfig().save(shopsConfigFile);
     }
