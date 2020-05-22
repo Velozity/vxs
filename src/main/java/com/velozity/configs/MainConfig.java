@@ -79,7 +79,7 @@ public class MainConfig {
 
         // System settings
         getMainConfig().addDefault("settings.system.filelogging", false);
-        getMainConfig().addDefault("settings.system.maxloggingsize", "10");
+        getMainConfig().addDefault("settings.system.maxloggingsize", 10);
         getMainConfig().addDefault("settings.system.stats", true);
 
         // Command customization
