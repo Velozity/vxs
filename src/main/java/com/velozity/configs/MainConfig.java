@@ -73,7 +73,6 @@ public class MainConfig {
         getMainConfig().addDefault("settings.shop.currencysymbol", "$");
         getMainConfig().addDefault("settings.shop.buyprefix", "§4B");
         getMainConfig().addDefault("settings.shop.sellprefix", "§2S");
-        getMainConfig().addDefault("settings.shop.sellmultiple", false);
 
         getMainConfig().addDefault("settings.shop.guititle", "Buy {item}");
 
