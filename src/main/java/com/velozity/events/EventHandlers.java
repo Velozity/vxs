@@ -59,7 +59,7 @@ public class EventHandlers implements Listener {
                 // If sign being hit is in a registered sign shop & its a normal user
                 if(signIds.contains(String.valueOf(signId)) /*&& !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())*/) {
                     Shop shop = Global.shopConfig.getShop(signId);
-                    shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), signId, shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
+                    shopgui.openShopGUI(e.getPlayer(), signId, shop.title, shop.buyprice, shop.sellprice);
                     e.setCancelled(true);
                     return;
                 }
@@ -78,7 +78,7 @@ public class EventHandlers implements Listener {
             // If sign being hit is in a registered sign shop & its a normal user
             if(signIdExists && !Global.editModeEnabled.contains(e.getPlayer().getUniqueId())) {
                 Shop shop = Global.shopConfig.getShop(signId);
-                shopgui.openShopGUI(Material.getMaterial(shop.item.getType().toString()), e.getPlayer(), signId, shop.title, shop.item.getItemMeta().getLore(), shop.buyprice, shop.sellprice);
+                shopgui.openShopGUI(e.getPlayer(), signId, shop.title, shop.buyprice, shop.sellprice);
                 e.setCancelled(true);
                 return;
             }
