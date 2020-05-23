@@ -163,7 +163,7 @@ public class ShopConfig {
                                 }
                             }
                         },
-                        30000
+                        20000
                 );
             } else {
                 Global.interact.msgPlayer("That shop cannot be found", player);
