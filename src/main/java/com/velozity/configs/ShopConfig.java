@@ -148,6 +148,31 @@ public class ShopConfig {
         return shops;
     }
 
+    public void initiateDescChangeProcess(String signId, Player player) {
+        if(player.hasPermission("vshop.editormode")) {
+            if(signIdExists(signId)) {
+                Global.pendingNewDesc.put(player, signId);
+                Global.interact.msgPlayer("Type /vs desc <new desc> - To change this items sign description.", player);
+                new java.util.Timer().schedule(
+                        new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                if(Global.pendingNewBuyPrice.containsKey(player)){
+                                    Global.pendingNewBuyPrice.remove(player);
+                                    Global.interact.msgPlayer("No desc entered - Timed out", player);
+                                }
+                            }
+                        },
+                        30000
+                );
+            } else {
+                Global.interact.msgPlayer("That shop cannot be found", player);
+            }
+        } else {
+            Global.interact.msgPlayer("You don't have permission to do this!", player);
+        }
+    }
+
     public void initiateBuyPriceChangeProcess(String signId, Player player) {
         if(player.hasPermission("vshop.editormode")) {
             if(signIdExists(signId)) {

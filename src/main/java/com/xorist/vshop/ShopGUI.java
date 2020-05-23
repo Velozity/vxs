@@ -116,12 +116,19 @@ public class ShopGUI implements Listener {
             String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
             Global.shopConfig.initiateSellPriceChangeProcess(signID, player);
             player.closeInventory();
+
+
+        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 21)) {
+            // EDIT DESC BUTTON
+            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
+            Global.shopConfig.initiateDescChangeProcess(signID, player);
+            player.closeInventory();
         }
     }
 
     public void buyItem(Player player, Inventory shopInventory) throws IOException {
         int buyPrice = Integer.parseInt(shopInventory.getItem(2).getItemMeta().getLocalizedName());
-        int cost = buyPrice * shopInventory.getItem(4).getAmount();
+        long cost = buyPrice * shopInventory.getItem(4).getAmount();
         Inventory playerInventory = player.getInventory();
 
         // rework to fill inventory with bought item until full, then send player message saying no space is available

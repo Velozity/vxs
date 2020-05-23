@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
@@ -140,7 +141,7 @@ public class Main extends JavaPlugin {
         Player player = (Player) sender;
 
         if (command.getLabel().equals("vshop") || command.getLabel().equals("vs")) {
-            if (args[0].contains("editmode") || args[0].contains("em") || args[0].contains("edit")) {
+            if (args[0].equalsIgnoreCase("editmode") || args[0].equalsIgnoreCase("em") || args[0].equalsIgnoreCase("edit")) {
                 if (player.hasPermission(Global._permEditorMode)) {
                     if (Global.editModeEnabled.contains(player.getUniqueId())) {
                         interact.msgPlayer("Editor mode disabled!", player);
@@ -159,7 +160,7 @@ public class Main extends JavaPlugin {
                     interact.msgPlayer("You do not have access to this command", player);
                 }
             }
-            else if (args[0].contains("buy")) {
+            else if (args[0].equalsIgnoreCase("buy")) {
                 if (Global.pendingNewBuyPrice.containsKey(player)) {
                     if (Global.parser.signPrice(args[1]) > -1) {
                         String signId = Global.pendingNewBuyPrice.get(player);
@@ -192,7 +193,7 @@ public class Main extends JavaPlugin {
                     return true;
                 }
             }
-            else if (args[0].contains("sell")) {
+            else if (args[0].equalsIgnoreCase("sell")) {
                 if (Global.pendingNewSellPrice.containsKey(player)) {
                     if (Global.parser.signPrice(args[1]) > -1) {
                         String signId = Global.pendingNewSellPrice.get(player);
@@ -215,6 +216,36 @@ public class Main extends JavaPlugin {
                             sign.update(true);
                             Global.pendingNewSellPrice.remove(player);
                             interact.msgPlayer("You have changed the sell price to " + (String)Global.mainConfig.readSetting("shop", "currencysymbol") + price, player);
+                        }
+                    } else {
+                        interact.msgPlayer("You entered an invalid amount", player);
+                        Global.pendingNewSellPrice.remove(player);
+                        return true;
+                    }
+                } else {
+                    interact.msgPlayer("You have not selected a shop to change the sell price for. Try to right click a sign shop in editor mode", player);
+                    return true;
+                }
+            }
+            else if (args[0].equalsIgnoreCase("desc")) {
+                if (Global.pendingNewDesc.containsKey(player)) {
+                    if (Global.parser.signPrice(args[1]) > -1) {
+                        String signId = Global.pendingNewDesc.get(player);
+                        if (!Global.parser.base64ToLocation(signId).getBlock().isEmpty()) {
+                            Sign sign = (Sign)Global.parser.base64ToLocation(signId).getBlock().getState();
+                            String desc = Arrays.stream(args)
+                                    .skip(1)
+                                    .collect(Collectors.joining());
+
+                            if(desc.length() <= 15) {
+                                sign.setLine(1, desc);
+                                sign.update(true);
+                                Global.pendingNewDesc.remove(player);
+                                interact.msgPlayer("You have changed the desc of this shop to '" + desc + "'", player);
+                            } else {
+                                interact.msgPlayer("The character length of a new desc must be less than 15 characters", player);
+                                Global.pendingNewDesc.remove(player);
+                            }
                         }
                     } else {
                         interact.msgPlayer("You entered an invalid amount", player);

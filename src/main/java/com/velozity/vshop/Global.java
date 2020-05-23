@@ -35,6 +35,7 @@ public class Global {
     public static List<String> pendingRemoveSigns = new ArrayList<>();
     public static Map<Player, String> pendingNewBuyPrice = new HashMap<>();
     public static Map<Player, String> pendingNewSellPrice = new HashMap<>();
+    public static Map<Player, String> pendingNewDesc = new HashMap<>();
 
     public static final String _permCreateShop = "vshop.createshop";
     public static final String _permDestroyShop = "vshop.destroyshop";
