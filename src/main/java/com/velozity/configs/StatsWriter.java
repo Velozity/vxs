@@ -46,15 +46,15 @@ public class StatsWriter {
         }
     }
 
-    public void addTotalIncome(Integer income) throws IOException {
+    public void addTotalIncome(Long income) throws IOException {
 
         if(!(Boolean)Global.mainConfig.readSetting("system", "stats")) {
             return;
         }
 
-        getStatsConfig().set("stats.totalincome", (Long.parseLong(readStat("totalincome")) + income));
-        getStatsConfig().set("stats.transactions", (Long.parseLong(readStat("transactions")) + 1));
-        getStatsConfig().set("stats.buycount", (Long.parseLong(readStat("buycount")) + 1));
+        getStatsConfig().set("stats.totalincome", Long.parseLong(readStat("totalincome")) + income);
+        getStatsConfig().set("stats.transactions", Long.parseLong(readStat("transactions")) + 1);
+        getStatsConfig().set("stats.buycount", Long.parseLong(readStat("buycount")) + 1);
         getStatsConfig().save(statsConfigFile);
 
         try {
@@ -89,7 +89,7 @@ public class StatsWriter {
             return "Stats is disabled on this server";
         }
 
-        return (String)getStatsConfig().getConfigurationSection("stats").get(key);
+        return getStatsConfig().getConfigurationSection("stats").get(key).toString();
     }
 
     public void writeDefaultStats() throws IOException {
