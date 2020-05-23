@@ -6,9 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
 
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Parsers {
@@ -34,6 +32,7 @@ public class Parsers {
     }
 
     public Location base64ToLocation(String base64) {
+
         String decoded = new String(Base64.getDecoder().decode(base64));
         System.out.println(decoded);
         System.out.println(Arrays.toString(decoded.split(":")));

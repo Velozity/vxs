@@ -52,11 +52,16 @@ public class StatsWriter {
             return;
         }
 
-        getStatsConfig().set("settings.totalincome", String.valueOf((Integer.parseInt(readStat("totalincome")) + income)));
-        getStatsConfig().set("settings.transactions", String.valueOf((Integer.parseInt(readStat("transactions")) + 1)));
-        getStatsConfig().set("settings.buycount", String.valueOf((Integer.parseInt(readStat("buycount")) + 1)));
-        getStatsConfig().options().copyDefaults(true);
+        getStatsConfig().set("stats.totalincome", (Long.parseLong(readStat("totalincome")) + income));
+        getStatsConfig().set("stats.transactions", (Long.parseLong(readStat("transactions")) + 1));
+        getStatsConfig().set("stats.buycount", (Long.parseLong(readStat("buycount")) + 1));
         getStatsConfig().save(statsConfigFile);
+
+        try {
+            statsConfig.load(statsConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            Global.interact.logServer(LogType.error,"Something went wrong when trying to add stats in your stats.yml");
+        }
     }
 
     public void addTotalExpenditure(Integer expenditure) throws IOException {
@@ -65,11 +70,17 @@ public class StatsWriter {
             return;
         }
 
-        getStatsConfig().set("settings.totalexpenditure", String.valueOf((Integer.parseInt(readStat("totalexpenditure")) + expenditure)));
-        getStatsConfig().set("settings.transactions", String.valueOf((Integer.parseInt(readStat("transactions")) + 1)));
-        getStatsConfig().set("settings.sellcount", String.valueOf((Integer.parseInt(readStat("sellcount")) + 1)));
+        getStatsConfig().set("stats.totalexpenditure", (Long.parseLong(readStat("totalexpenditure")) + expenditure));
+        getStatsConfig().set("stats.transactions", (Long.parseLong(readStat("transactions")) + 1));
+        getStatsConfig().set("stats.sellcount", (Long.parseLong(readStat("sellcount")) + 1));
         getStatsConfig().options().copyDefaults(true);
         getStatsConfig().save(statsConfigFile);
+
+        try {
+            statsConfig.load(statsConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            Global.interact.logServer(LogType.error,"Something went wrong when trying to add stats in your stats.yml");
+        }
     }
 
     public String readStat(String key) {
@@ -78,25 +89,25 @@ public class StatsWriter {
             return "Stats is disabled on this server";
         }
 
-        try {
-            statsConfig.load(statsConfigFile);
-        } catch (IOException | InvalidConfigurationException e) {
-            Global.interact.logServer(LogType.error,"Something went wrong when trying to read stat: " + key + "in your stats.yml");
-        }
-
         return (String)getStatsConfig().getConfigurationSection("stats").get(key);
     }
 
     public void writeDefaultStats() throws IOException {
         // Shop settings
-        getStatsConfig().addDefault("stats.transactions", "0");
-        getStatsConfig().addDefault("stats.buycount", "0");
-        getStatsConfig().addDefault("stats.sellcount", "0");
+        getStatsConfig().addDefault("stats.transactions", 0);
+        getStatsConfig().addDefault("stats.buycount", 0);
+        getStatsConfig().addDefault("stats.sellcount", 0);
 
-        getStatsConfig().addDefault("stats.totalincome", "0");
-        getStatsConfig().addDefault("stats.totalexpenditure", "0");
+        getStatsConfig().addDefault("stats.totalincome", 0);
+        getStatsConfig().addDefault("stats.totalexpenditure", 0);
         getStatsConfig().options().copyDefaults(true);
         getStatsConfig().save(statsConfigFile);
+
+        try {
+            statsConfig.load(statsConfigFile);
+        } catch (IOException | InvalidConfigurationException e) {
+            Global.interact.logServer(LogType.error,"Something went wrong when trying to add stats in your stats.yml");
+        }
     }
 }
 

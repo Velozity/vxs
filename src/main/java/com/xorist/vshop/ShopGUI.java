@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -89,7 +91,7 @@ public class ShopGUI implements Listener {
             }
         } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 18)) {
             // BUY TOGGLE BUTTON
-            String signID = clickedItem.getItemMeta().getLocalizedName();
+            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
             boolean toggleValue = toggleBuyItems(shopInventory, signID);
             if(toggleValue) {
                 updateButtonTotalValues(shopInventory, playerInventory);
@@ -97,15 +99,27 @@ public class ShopGUI implements Listener {
 
         } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 19)) {
             // SELL TOGGLE BUTTON
-            String signID = clickedItem.getItemMeta().getLocalizedName();
+            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
             boolean toggleValue = toggleSellItems(shopInventory, signID);
             if(toggleValue) {
                 updateButtonTotalValues(shopInventory, playerInventory);
             }
+        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 20)) {
+            // EDIT BUY PRICE BUTTON
+            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
+            Global.shopConfig.initiateBuyPriceChangeProcess(signID, player);
+            player.closeInventory();
+
+
+        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 21)) {
+            // EDIT SELL PRICE BUTTON
+            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
+            Global.shopConfig.initiateSellPriceChangeProcess(signID, player);
+            player.closeInventory();
         }
     }
 
-    public void buyItem(Player player, Inventory shopInventory) {
+    public void buyItem(Player player, Inventory shopInventory) throws IOException {
         int buyPrice = Integer.parseInt(shopInventory.getItem(2).getItemMeta().getLocalizedName());
         int cost = buyPrice * shopInventory.getItem(4).getAmount();
         Inventory playerInventory = player.getInventory();
@@ -114,9 +128,13 @@ public class ShopGUI implements Listener {
 
         if(playerInventory.firstEmpty() != -1) {
             if(Global.econ.getBalance(player.getName()) > cost) {
-                Global.econ.withdrawPlayer(player.getName(), cost);
-                playerInventory.setItem(playerInventory.firstEmpty(), shopInventory.getItem(4));
-                interact.msgPlayer("You bought " + shopInventory.getItem(4).getAmount() + " item(s) for " + cost, player);
+                if(Global.econ.withdrawPlayer(player.getName(), cost).transactionSuccess()) {
+                    playerInventory.setItem(playerInventory.firstEmpty(), shopInventory.getItem(4));
+                    interact.msgPlayer("You bought " + shopInventory.getItem(4).getAmount() + " item(s) for " + Global.mainConfig.readSetting("shop", "currencysymbol") + cost, player);
+                    Global.statsWriter.addTotalIncome(cost);
+                } else {
+                    interact.msgPlayer("Transaction failed", player);
+                }
             } else {
                 interact.msgPlayer("You do not have enough money.", player);
             }
@@ -125,7 +143,7 @@ public class ShopGUI implements Listener {
         }
     }
 
-    public void sellItem(Player player, Inventory shopInventory) {
+    public void sellItem(Player player, Inventory shopInventory) throws IOException {
         int sellPrice = Integer.parseInt(shopInventory.getItem(6).getItemMeta().getLocalizedName());
         Inventory playerInventory = player.getInventory();
         List<Integer> itemsToSell = new ArrayList<>();
@@ -150,24 +168,29 @@ public class ShopGUI implements Listener {
         int itemsSoldCounter = 0;
         int totalMoneyGiven = 0;
         for(int i: itemsToSell) {
-            for(int j = playerInventory.getItem(i).getAmount(); j > 0; j--) {
+            for (int j = playerInventory.getItem(i).getAmount(); j > 0; j--) {
                 playerInventory.getItem(i).setAmount(playerInventory.getItem(i).getAmount() - 1);
-                Global.econ.depositPlayer(player.getName(), sellPrice);
-                totalMoneyGiven += sellPrice;
-                numItemsToSell--;
-                itemsSoldCounter++;
-                haveSold = true;
-                if(numItemsToSell == 0) {
+                if (Global.econ.depositPlayer(player.getName(), sellPrice).transactionSuccess()) {
+                    totalMoneyGiven += sellPrice;
+                    numItemsToSell--;
+                    itemsSoldCounter++;
+                    haveSold = true;
+                    if (numItemsToSell == 0) {
+                        break;
+                    }
+                } else {
+                    interact.msgPlayer("Transaction failed", player);
+                    break;
+                }
+                if (numItemsToSell == 0) {
                     break;
                 }
             }
-            if(numItemsToSell == 0) {
-                break;
-            }
-        }
 
-        if(haveSold) {
-            interact.msgPlayer("You sold " + itemsSoldCounter + " item(s) for " + totalMoneyGiven, player);
+            if (haveSold) {
+                interact.msgPlayer("You sold " + itemsSoldCounter + " item(s) for " + Global.mainConfig.readSetting("shop", "currencysymbol") +totalMoneyGiven, player);
+                Global.statsWriter.addTotalExpenditure(sellPrice);
+            }
         }
     }
 
@@ -202,7 +225,7 @@ public class ShopGUI implements Listener {
         }
 
         if(haveSold) {
-            interact.msgPlayer("You sold " + itemsSoldCounter + " item(s) for " + totalMoneyGiven, player);
+            interact.msgPlayer("You sold " + itemsSoldCounter + " item(s) for " + Global.mainConfig.readSetting("shop", "currencysymbol") + totalMoneyGiven, player);
         }
     }
 
@@ -217,24 +240,35 @@ public class ShopGUI implements Listener {
             ItemMeta buyButtonMeta = buyButton.getItemMeta();
             if(shop.buyable) {
                 shop.buyable = false;
-                buyToggleButtonMeta.setDisplayName("BUY: OFF");
+                buyToggleButtonMeta.setDisplayName("Buy: OFF");
                 shopInventory.getItem(12).setType(Material.BARRIER);
-                buyButtonMeta.setDisplayName("CANNOT BUY");
-                Location signLocation = Global.parser.base64ToLocation(signID);
-                if(!signLocation.getBlock().isEmpty() && signLocation.getBlock().getType().equals(Material.OAK_SIGN)) {
-                    if(Global.shopConfig.signIdExists(Global.parser.locationToBase64(signLocation))) {
-                    }
+                buyButtonMeta.setDisplayName("Sold Out");
+
+                // Change sign text
+                if(!Global.parser.base64ToLocation(signID).getBlock().isEmpty()) {
+                    Sign sign = (Sign)Global.parser.base64ToLocation(signID).getBlock().getState();
+                    String oldLine = sign.getLine(2);
+
+                    sign.setLine(2, "SOLD OUT");
+                    sign.update();
                 }
             } else  {
                 shop.buyable = true;
-                buyToggleButtonMeta.setDisplayName("BUY: ON");
+                buyToggleButtonMeta.setDisplayName("Buy: ON");
                 shopInventory.getItem(12).setType(Material.GREEN_STAINED_GLASS);
-                buyButtonMeta.setDisplayName("BUY");
+                buyButtonMeta.setDisplayName("Buy");
+
+                // Change sign text
+                if(!Global.parser.base64ToLocation(signID).getBlock().isEmpty()) {
+                    Sign sign = (Sign)Global.parser.base64ToLocation(signID).getBlock().getState();
+                    sign.setLine(2, Global.mainConfig.readSetting("shop", "buyprefix").toString() + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + shop.buyprice);
+                    sign.update();
+                }
             }
             buyButtonMeta.setLore(emptyLore);
             shopInventory.getItem(12).setItemMeta(buyButtonMeta);
             buyToggleButton.setItemMeta(buyToggleButtonMeta);
-            Global.shopConfig.writeShop(signID, shop, true);
+            Global.shopConfig.writeShop(signID, shop);
             return shop.buyable;
         }
         return false;
@@ -253,25 +287,39 @@ public class ShopGUI implements Listener {
             ItemMeta sellAllButtonMeta = sellAllButton.getItemMeta();
             if(shop.sellable) {
                 shop.sellable = false;
-                sellToggleButtonMeta.setDisplayName("SELL: OFF");
+                sellToggleButtonMeta.setDisplayName("Sell: OFF");
                 shopInventory.getItem(13).setType(Material.BARRIER);
                 shopInventory.getItem(14).setType(Material.BARRIER);
-                sellButtonMeta.setDisplayName("CANNOT SELL");
-                sellAllButtonMeta.setDisplayName("CANNOT SELL");
+                sellButtonMeta.setDisplayName("Cannot Sell");
+                sellAllButtonMeta.setDisplayName("Cannot Sell");
+
+                // Change sign text
+                if(!Global.parser.base64ToLocation(signID).getBlock().isEmpty()) {
+                    Sign sign = (Sign)Global.parser.base64ToLocation(signID).getBlock().getState();
+                    sign.setLine(3, "");
+                    sign.update();
+                }
             } else  {
                 shop.sellable = true;
-                sellToggleButtonMeta.setDisplayName("SELL: ON");
+                sellToggleButtonMeta.setDisplayName("Sell: ON");
                 shopInventory.getItem(13).setType(Material.RED_STAINED_GLASS);
                 shopInventory.getItem(14).setType(Material.RED_STAINED_GLASS);
-                sellButtonMeta.setDisplayName("SELL");
-                sellAllButtonMeta.setDisplayName("SELL ALL");
+                sellButtonMeta.setDisplayName("Sell");
+                sellAllButtonMeta.setDisplayName("Sell All");
+
+                // Change sign text
+                if(!Global.parser.base64ToLocation(signID).getBlock().isEmpty()) {
+                    Sign sign = (Sign)Global.parser.base64ToLocation(signID).getBlock().getState();
+                    sign.setLine(3, Global.mainConfig.readSetting("shop", "sellprefix").toString() + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + shop.sellprice);
+                    sign.update();
+                }
             }
             sellAllButtonMeta.setLore(emptyLore);
             sellButtonMeta.setLore(emptyLore);
             shopInventory.getItem(13).setItemMeta(sellButtonMeta);
             shopInventory.getItem(14).setItemMeta(sellAllButtonMeta);
             sellToggleButton.setItemMeta(sellToggleButtonMeta);
-            Global.shopConfig.writeShop(signID, shop, true);
+            Global.shopConfig.writeShop(signID, shop);
             return shop.sellable;
         }
         return false;
@@ -357,7 +405,7 @@ public class ShopGUI implements Listener {
         Boolean isBuyable= false;
         Boolean isSellable = false;
         Shop shop = Global.shopConfig.getShop(signID);
-
+        String currency = (String)Global.mainConfig.readSetting("shop", "currencysymbol");
         shopItem.setAmount(1);
 
         if(shop != null) {
@@ -383,7 +431,7 @@ public class ShopGUI implements Listener {
         ItemStack buyOperator = new ItemStack(Material.GREEN_STAINED_GLASS);
         ItemMeta buyOperatorMeta = buyOperator.getItemMeta();
         List<String> buyOperatorLore = new ArrayList<>();
-        buyOperatorLore.add("Total: " + buyPrice * shopItem.getAmount());
+        buyOperatorLore.add(ChatColor.GREEN + "Total: " + currency + buyPrice * shopItem.getAmount());
         buyOperatorMeta.setLore(buyOperatorLore);
 
         // SELL BUTTON
@@ -391,9 +439,9 @@ public class ShopGUI implements Listener {
         ItemMeta sellOperatorMeta = sellOperator.getItemMeta();
         List<String> sellOperatorLore = new ArrayList<>();
         if(totalSellableItems > shopItem.getAmount()) {
-            sellOperatorLore.add("Total: " + sellPrice * shopItem.getAmount());
+            sellOperatorLore.add(ChatColor.RED + "Total: " + currency + sellPrice * shopItem.getAmount());
         } else {
-            sellOperatorLore.add("Total: " + sellPrice * totalSellableItems);
+            sellOperatorLore.add(ChatColor.RED + "Total: " + currency + sellPrice * totalSellableItems);
         }
         sellOperatorMeta.setLore(sellOperatorLore);
 
@@ -401,7 +449,7 @@ public class ShopGUI implements Listener {
         ItemStack sellAllOperator = new ItemStack(Material.RED_STAINED_GLASS);
         ItemMeta sellAllOperatorMeta = sellAllOperator.getItemMeta();
         List<String> sellAllOperatorLore = new ArrayList<>();
-        sellAllOperatorLore.add("Total: " + totalSellableItems * sellPrice);
+        sellAllOperatorLore.add(ChatColor.RED + "Total: " + currency + totalSellableItems * sellPrice);
         sellAllOperatorMeta.setLore(sellAllOperatorLore);
 
         // EDIT MODE BUY TOGGLE BUTTON
@@ -412,28 +460,36 @@ public class ShopGUI implements Listener {
         ItemStack adminSellToggleOperator = new ItemStack(Material.ENCHANTED_BOOK);
         ItemMeta adminSellToggleOperatorMeta = adminSellToggleOperator.getItemMeta();
 
+        // Change Buy Price Button
+        ItemStack btnChangeBuyPrice = new ItemStack(Material.ENCHANTED_BOOK);
+        ItemMeta btnChangeBuyPriceMeta = adminBuyToggleOperator.getItemMeta();
+
+        // Change Sell Price Button
+        ItemStack btnChangeSellPrice = new ItemStack(Material.ENCHANTED_BOOK);
+        ItemMeta btnChangeSellPriceMeta = adminSellToggleOperator.getItemMeta();
+
         // add/subtract button count logic for showing 2 outermost buttons on either side
         if(shopItem.getMaxStackSize() >= 8) {
             subtractOperator.setAmount(shopItemMaxStack);
-            String subtractOperatorName = "SUBTRACT " + shopItemMaxStack;
+            String subtractOperatorName = "Subtract " + shopItemMaxStack;
             subOperatorMeta.setDisplayName(subtractOperatorName);
             subtractOperator.setItemMeta(subOperatorMeta);
             shopInventory.setItem(0, subtractOperator);
 
             subtractOperator.setAmount(shopItemMaxStack / 4);
-            subtractOperatorName = "SUBTRACT " + shopItemMaxStack / 4;
+            subtractOperatorName = "Subtract " + shopItemMaxStack / 4;
             subOperatorMeta.setDisplayName(subtractOperatorName);
             subtractOperator.setItemMeta(subOperatorMeta);
             shopInventory.setItem(1, subtractOperator);
 
             addOperator.setAmount(shopItemMaxStack / 4);
-            String addOperatorName = "ADD " + shopItemMaxStack / 4;
+            String addOperatorName = "Add " + shopItemMaxStack / 4;
             addOperatorMeta.setDisplayName(addOperatorName);
             addOperator.setItemMeta(addOperatorMeta);
             shopInventory.setItem(7, addOperator);
 
             addOperator.setAmount(shopItemMaxStack);
-            addOperatorName = "ADD " + shopItemMaxStack;
+            addOperatorName = "Add " + shopItemMaxStack;
             addOperatorMeta.setDisplayName(addOperatorName);
             addOperator.setItemMeta(addOperatorMeta);
             shopInventory.setItem(8, addOperator);
@@ -441,14 +497,14 @@ public class ShopGUI implements Listener {
 
         // 2 innermost add/subtract buttons
         subtractOperator.setAmount(1);
-        subOperatorMeta.setDisplayName("SUBTRACT 1");
+        subOperatorMeta.setDisplayName("Subtract 1");
         subOperatorMeta.setLocalizedName(String.valueOf(buyPrice));
         subtractOperator.setItemMeta(subOperatorMeta);
         shopInventory.setItem(2, subtractOperator);
         shopInventory.setItem(4, shopItem);
 
         addOperator.setAmount(1);
-        addOperatorMeta.setDisplayName("ADD 1");
+        addOperatorMeta.setDisplayName("Add 1");
         addOperatorMeta.setLocalizedName(String.valueOf(sellPrice));
         addOperator.setItemMeta(addOperatorMeta);
         shopInventory.setItem(6, addOperator);
@@ -456,11 +512,11 @@ public class ShopGUI implements Listener {
         // logic for showing buy/sell buttons pre-shop load
 
         if(isBuyable) {
-            buyOperatorMeta.setDisplayName("BUY");
+            buyOperatorMeta.setDisplayName("Buy");
         } else {
             List<String> emptyLore = new ArrayList<>();
             buyOperator.setType(Material.BARRIER);
-            buyOperatorMeta.setDisplayName("CANNOT BUY");
+            buyOperatorMeta.setDisplayName("Sold Out");
             buyOperatorMeta.setLore(emptyLore);
         }
         buyOperator.setAmount(1);
@@ -468,14 +524,14 @@ public class ShopGUI implements Listener {
         shopInventory.setItem(12, buyOperator);
 
         if(isSellable) {
-            sellOperatorMeta.setDisplayName("SELL");
-            sellAllOperatorMeta.setDisplayName("SELL ALL");
+            sellOperatorMeta.setDisplayName("Sell");
+            sellAllOperatorMeta.setDisplayName("Sell All");
         } else {
             List<String> emptyLore = new ArrayList<>();
             sellOperator.setType(Material.BARRIER);
             sellAllOperator.setType(Material.BARRIER);
-            sellOperatorMeta.setDisplayName("CANNOT SELL");
-            sellAllOperatorMeta.setDisplayName("CANNOT SELL");
+            sellOperatorMeta.setDisplayName("Cannot Sell");
+            sellAllOperatorMeta.setDisplayName("Cannot Sell");
             sellOperatorMeta.setLore(emptyLore);
             sellAllOperatorMeta.setLore(emptyLore);
         }
@@ -488,24 +544,34 @@ public class ShopGUI implements Listener {
 
         if(Global.editModeEnabled.contains(player.getUniqueId())) {
             if(isBuyable) {
-                adminBuyToggleOperatorMeta.setDisplayName("BUY: ON");
+                adminBuyToggleOperatorMeta.setDisplayName("Buy: ON");
             } else {
-                adminBuyToggleOperatorMeta.setDisplayName("BUY: OFF");
+                adminBuyToggleOperatorMeta.setDisplayName("Buy: OFF");
             }
             adminBuyToggleOperator.setAmount(1);
             adminBuyToggleOperatorMeta.setLocalizedName(signID);
             adminBuyToggleOperator.setItemMeta(adminBuyToggleOperatorMeta);
             shopInventory.setItem(18, adminBuyToggleOperator);
 
+            btnChangeBuyPriceMeta.setDisplayName("Edit Buy Price");
+            btnChangeBuyPrice.setAmount(1);
+            btnChangeBuyPrice.setItemMeta(btnChangeBuyPriceMeta);
+            shopInventory.setItem(20, btnChangeBuyPrice);
+
             if(isSellable) {
-                adminSellToggleOperatorMeta.setDisplayName("SELL: ON");
+                adminSellToggleOperatorMeta.setDisplayName("Sell: ON");
             } else {
-                adminSellToggleOperatorMeta.setDisplayName("SELL: OFF");
+                adminSellToggleOperatorMeta.setDisplayName("Sell: OFF");
             }
             adminSellToggleOperator.setAmount(1);
             adminSellToggleOperatorMeta.setLocalizedName(signID);
             adminSellToggleOperator.setItemMeta(adminSellToggleOperatorMeta);
             shopInventory.setItem(19, adminSellToggleOperator);
+
+            btnChangeSellPriceMeta.setDisplayName("Edit Sell Price");
+            btnChangeSellPrice.setAmount(1);
+            btnChangeSellPrice.setItemMeta(btnChangeSellPriceMeta);
+            shopInventory.setItem(21, btnChangeSellPrice);
         }
         // Hi Cassandra
         return shopInventory;

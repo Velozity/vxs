@@ -38,7 +38,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.Material;
 
 import lombok.Getter;
-import org.graalvm.compiler.nodes.PiNode;
 
 public class Main extends JavaPlugin {
 
@@ -181,6 +180,7 @@ public class Main extends JavaPlugin {
                             sign.setLine(2, Global.mainConfig.readSetting("shop", "buyprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
                             sign.update(true);
                             Global.pendingNewBuyPrice.remove(player);
+                            interact.msgPlayer("You have changed the buy price to " + (String)Global.mainConfig.readSetting("shop", "currencysymbol") + price, player);
                         }
                     } else {
                         interact.msgPlayer("You entered an invalid amount", player);
@@ -188,7 +188,7 @@ public class Main extends JavaPlugin {
                         return true;
                     }
                 } else {
-                    interact.msgPlayer("You have not selected a shop to change buy price for. Try to right click a sign shop in editor mode", player);
+                    interact.msgPlayer("You have not selected a shop to change the buy price for. Try to right click a sign shop in editor mode", player);
                     return true;
                 }
             }
@@ -214,6 +214,7 @@ public class Main extends JavaPlugin {
                             sign.setLine(3, Global.mainConfig.readSetting("shop", "sellprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
                             sign.update(true);
                             Global.pendingNewSellPrice.remove(player);
+                            interact.msgPlayer("You have changed the sell price to " + (String)Global.mainConfig.readSetting("shop", "currencysymbol") + price, player);
                         }
                     } else {
                         interact.msgPlayer("You entered an invalid amount", player);
@@ -221,7 +222,7 @@ public class Main extends JavaPlugin {
                         return true;
                     }
                 } else {
-                    interact.msgPlayer("You have not selected a shop to change buy price for. Try to right click a sign shop in editor mode", player);
+                    interact.msgPlayer("You have not selected a shop to change the sell price for. Try to right click a sign shop in editor mode", player);
                     return true;
                 }
             }
