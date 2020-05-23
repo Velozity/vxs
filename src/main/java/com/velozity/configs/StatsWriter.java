@@ -70,9 +70,9 @@ public class StatsWriter {
             return;
         }
 
-        getStatsConfig().set("stats.totalexpenditure", (Long.parseLong(readStat("totalexpenditure")) + expenditure));
-        getStatsConfig().set("stats.transactions", (Long.parseLong(readStat("transactions")) + 1));
-        getStatsConfig().set("stats.sellcount", (Long.parseLong(readStat("sellcount")) + 1));
+        getStatsConfig().set("stats.totalexpenditure", Long.parseLong(readStat("totalexpenditure")) + expenditure);
+        getStatsConfig().set("stats.transactions", Long.parseLong(readStat("transactions")) + 1);
+        getStatsConfig().set("stats.sellcount", Long.parseLong(readStat("sellcount")) + 1);
         getStatsConfig().options().copyDefaults(true);
         getStatsConfig().save(statsConfigFile);
 
