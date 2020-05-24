@@ -139,8 +139,8 @@ public class EventHandlers implements Listener {
 
                     String line3 = ws.getLine(2);
                     String line4 = ws.getLine(3);
-                    if(line3.isEmpty() || line4.isEmpty()) {
-                        interact.msgPlayer("You must specify either a buy or sell price", e.getPlayer());
+                    if(line3.isEmpty() && line4.isEmpty()) {
+                        interact.msgPlayer("You must specify a valid buy or sell price", e.getPlayer());
                         e.setCancelled(false);
                         return;
                     }
