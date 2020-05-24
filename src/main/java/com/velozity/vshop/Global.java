@@ -1,5 +1,6 @@
 package com.velozity.vshop;
 
+import com.sun.org.apache.bcel.internal.generic.ARRAYLENGTH;
 import com.velozity.configs.MainConfig;
 import com.velozity.configs.ShopConfig;
 import com.velozity.configs.StatsWriter;
@@ -10,6 +11,7 @@ import com.xorist.vshop.ShopGUI;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 import java.util.*;
@@ -30,6 +32,21 @@ public class Global {
     public static final ShopGUI shopgui = new ShopGUI();
     public static final Interactions interact = new Interactions();
     public static final Parsers parser = new Parsers();
+
+    public static List<Material> signTypes = Arrays.asList(
+            Material.OAK_SIGN,
+            Material.OAK_WALL_SIGN,
+            Material.SPRUCE_SIGN,
+            Material.SPRUCE_WALL_SIGN,
+            Material.BIRCH_SIGN,
+            Material.BIRCH_WALL_SIGN,
+            Material.JUNGLE_SIGN,
+            Material.JUNGLE_WALL_SIGN,
+            Material.ACACIA_SIGN,
+            Material.ACACIA_WALL_SIGN,
+            Material.DARK_OAK_SIGN,
+            Material.DARK_OAK_WALL_SIGN
+    );
 
     public static List<UUID> editModeEnabled = new ArrayList<>();
     public static List<String> pendingRemoveSigns = new ArrayList<>();

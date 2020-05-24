@@ -46,7 +46,6 @@ public class Main extends JavaPlugin {
     MainConfig mainConfig = Global.mainConfig;
     ShopConfig shopConfig = Global.shopConfig;
     Interactions interact = Global.interact;
-    ShopGUI shopgui = Global.shopgui;
 
     @Override
     public void onDisable() {
@@ -56,6 +55,8 @@ public class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         Global.getMainInstance = this;
+        registerCommands();
+
         getServer().getPluginManager().registerEvents(new EventHandlers(), this);
         getServer().getPluginManager().registerEvents(new ShopGUI(), this);
 
@@ -92,6 +93,10 @@ public class Main extends JavaPlugin {
         validateSigns();
         interact.logServer(LogType.info,"Loaded " + Global.shopConfig.getSignIds().size() + " shop signs");
         interact.logServer(LogType.info,"Ready to rock and roll");
+    }
+
+    public void registerCommands() {
+        this.getCommand("vshop").setExecutor(new Commands());
     }
 
     public void validateSigns() {
@@ -131,184 +136,4 @@ public class Main extends JavaPlugin {
         Global.perms = rsp.getProvider();
         return Global.perms != null;
     }
-
-    public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
-        if (!(sender instanceof Player)) {
-            Global.log.info("Only players are supported for this Example Plugin, but you should not do this!!!");
-            return true;
-        }
-
-        Player player = (Player) sender;
-
-        if (command.getLabel().equals("vshop") || command.getLabel().equals("vs")) {
-            if (args[0].equalsIgnoreCase("editmode") || args[0].equalsIgnoreCase("em") || args[0].equalsIgnoreCase("edit")) {
-                if (player.hasPermission(Global._permEditorMode)) {
-                    if (Global.editModeEnabled.contains(player.getUniqueId())) {
-                        interact.msgPlayer("Editor mode disabled!", player);
-                        Global.editModeEnabled.remove(player.getUniqueId());
-                        Global.interact.logServer(LogType.info, player.getDisplayName() + " exited editor mode");
-                        return true;
-                    }
-                    Global.editModeEnabled.add(player.getUniqueId());
-                    Global.interact.logServer(LogType.info, player.getDisplayName() + " entered editor mode");
-                    interact.msgPlayer("Editor mode enabled!", player);
-                    interact.msgPlayer("Spawn a sign and title it [shop] on the first line", player);
-                    interact.msgPlayer("Put the price per item on the bottom line", player);
-                    interact.msgPlayer("Hit the sign with your item to sell!", player);
-                    interact.msgPlayer("Exit editor mode by typing /vs em again", player);
-                } else {
-                    interact.msgPlayer("You do not have access to this command", player);
-                }
-            }
-            else if (args[0].equalsIgnoreCase("buy")) {
-                if (Global.pendingNewBuyPrice.containsKey(player)) {
-                    if (Global.parser.signPrice(args[1]) > -1) {
-                        String signId = Global.pendingNewBuyPrice.get(player);
-                        if (!Global.parser.base64ToLocation(signId).getBlock().isEmpty()) {
-                            Sign sign = (Sign) Global.parser.base64ToLocation(signId).getBlock().getState();
-                            Integer price = Global.parser.signPrice(args[1]);
-
-                            Shop shop = Global.shopConfig.getShop(signId);
-                            shop.buyprice = price;
-
-                            try {
-                                Global.shopConfig.writeShop(signId, shop);
-                            } catch (IOException e) {
-                                interact.msgPlayer("An error occured making this change", player);
-                                return true;
-                            }
-
-                            sign.setLine(2, Global.mainConfig.readSetting("shop", "buyprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
-                            sign.update(true);
-                            Global.pendingNewBuyPrice.remove(player);
-                            interact.msgPlayer("You have changed the buy price to " + (String)Global.mainConfig.readSetting("shop", "currencysymbol") + price, player);
-                        }
-                    } else {
-                        interact.msgPlayer("You entered an invalid amount", player);
-                        Global.pendingNewBuyPrice.remove(player);
-                        return true;
-                    }
-                } else {
-                    interact.msgPlayer("You have not selected a shop to change the buy price for. Try to right click a sign shop in editor mode", player);
-                    return true;
-                }
-            }
-            else if (args[0].equalsIgnoreCase("sell")) {
-                if (Global.pendingNewSellPrice.containsKey(player)) {
-                    if (Global.parser.signPrice(args[1]) > -1) {
-                        String signId = Global.pendingNewSellPrice.get(player);
-                        if (!Global.parser.base64ToLocation(signId).getBlock().isEmpty()) {
-                            Sign sign = (Sign)Global.parser.base64ToLocation(signId).getBlock().getState();
-                            Integer price = Global.parser.signPrice(args[1]);
-
-                            Shop shop = Global.shopConfig.getShop(signId);
-                            shop.sellprice = price;
-
-                            try {
-                                Global.shopConfig.writeShop(signId, shop);
-                            } catch (IOException e) {
-                                interact.msgPlayer("An error occurred making this change", player);
-                                Global.pendingNewSellPrice.remove(player);
-                                return true;
-                            }
-
-                            sign.setLine(3, Global.mainConfig.readSetting("shop", "sellprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
-                            sign.update(true);
-                            Global.pendingNewSellPrice.remove(player);
-                            interact.msgPlayer("You have changed the sell price to " + (String)Global.mainConfig.readSetting("shop", "currencysymbol") + price, player);
-                        }
-                    } else {
-                        interact.msgPlayer("You entered an invalid amount", player);
-                        Global.pendingNewSellPrice.remove(player);
-                        return true;
-                    }
-                } else {
-                    interact.msgPlayer("You have not selected a shop to change the sell price for. Try to right click a sign shop in editor mode", player);
-                    return true;
-                }
-            }
-            else if (args[0].equalsIgnoreCase("desc")) {
-                if (Global.pendingNewDesc.containsKey(player)) {
-                    if (Global.parser.signPrice(args[1]) > -1) {
-                        String signId = Global.pendingNewDesc.get(player);
-                        if (!Global.parser.base64ToLocation(signId).getBlock().isEmpty()) {
-                            Sign sign = (Sign)Global.parser.base64ToLocation(signId).getBlock().getState();
-                            String desc = Arrays.stream(args)
-                                    .skip(1)
-                                    .collect(Collectors.joining());
-
-                            if(desc.length() <= 15) {
-                                sign.setLine(1, desc);
-                                sign.update(true);
-                                Global.pendingNewDesc.remove(player);
-                                interact.msgPlayer("You have changed the desc of this shop to '" + desc + "'", player);
-                            } else {
-                                interact.msgPlayer("The character length of a new desc must be less than 15 characters", player);
-                                Global.pendingNewDesc.remove(player);
-                            }
-                        }
-                    } else {
-                        interact.msgPlayer("You entered an invalid amount", player);
-                        Global.pendingNewSellPrice.remove(player);
-                        return true;
-                    }
-                } else {
-                    interact.msgPlayer("You have not selected a shop to change the sell price for. Try to right click a sign shop in editor mode", player);
-                    return true;
-                }
-            }
-            else if(args[0].equals("stats")) {
-                if(player.hasPermission(Global._permStats)) {
-                    if(!(Boolean)mainConfig.readSetting("system", "stats")) {
-                        interact.msgPlayer("Stats is disabled on this server", player);
-                        return true;
-                    }
-
-                    interact.msgPlayer(
-                            new String[] {
-                                    "Shop Count: " + Global.shopConfig.getSignIds().size(),
-                                    "Total Buys: " + Global.statsWriter.readStat("buycount"),
-                                    "Total Sells: " + Global.statsWriter.readStat("sellcount"),
-                                    "Total Transactions: " + Global.statsWriter.readStat("transactions"),
-                                    "",
-                                    "Total Income: " + Global.statsWriter.readStat("totalincome"),
-                                    "Total Expenditure: " + Global.statsWriter.readStat("totalexpenditure")
-                            }, player
-                    );
-                } else {
-                    interact.msgPlayer("You do not have access to this command", player);
-                }
-            }
-            else if (args[0].equals("help")) {
-                List<String> toPrint = new ArrayList<>();
-
-                if (player.hasPermission(Global._permEditorMode))
-                    toPrint.add("/vs <editmode/edit/em> - Toggle editor mode");
-
-                if (player.hasPermission(Global._permStats))
-                    toPrint.add("/vs stats - Show some neat statistics");
-
-                toPrint.add("/vs help - Show this message");
-                interact.msgPlayer(toPrint.toArray(new String[0]), player);
-            }
-
-            else {
-                interact.msgPlayer("Invalid command! Use /help", player);
-            }
-        }
-        return false;
-    }
-
-    public static Economy getEconomy() {
-        return Global.econ;
-    }
-
-    public static Permission getPermissions() {
-        return Global.perms;
-    }
-
-    public static Chat getChat() {
-        return Global.chat;
-    }
-
 }

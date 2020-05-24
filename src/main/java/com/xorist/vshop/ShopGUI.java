@@ -118,7 +118,7 @@ public class ShopGUI implements Listener {
             player.closeInventory();
 
 
-        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 21)) {
+        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 22)) {
             // EDIT DESC BUTTON
             String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
             Global.shopConfig.initiateDescChangeProcess(signID, player);
@@ -469,11 +469,15 @@ public class ShopGUI implements Listener {
 
         // Change Buy Price Button
         ItemStack btnChangeBuyPrice = new ItemStack(Material.ENCHANTED_BOOK);
-        ItemMeta btnChangeBuyPriceMeta = adminBuyToggleOperator.getItemMeta();
+        ItemMeta btnChangeBuyPriceMeta = btnChangeBuyPrice.getItemMeta();
 
         // Change Sell Price Button
         ItemStack btnChangeSellPrice = new ItemStack(Material.ENCHANTED_BOOK);
-        ItemMeta btnChangeSellPriceMeta = adminSellToggleOperator.getItemMeta();
+        ItemMeta btnChangeSellPriceMeta = btnChangeSellPrice.getItemMeta();
+
+        // Change Desc Button
+        ItemStack btnChangeDescPrice = new ItemStack(Material.ENCHANTED_BOOK);
+        ItemMeta btnChangeDescPriceMeta = btnChangeDescPrice.getItemMeta();
 
         // add/subtract button count logic for showing 2 outermost buttons on either side
         if(shopItem.getMaxStackSize() >= 8) {
@@ -579,6 +583,11 @@ public class ShopGUI implements Listener {
             btnChangeSellPrice.setAmount(1);
             btnChangeSellPrice.setItemMeta(btnChangeSellPriceMeta);
             shopInventory.setItem(21, btnChangeSellPrice);
+
+            btnChangeDescPriceMeta.setDisplayName("Edit Item Description");
+            btnChangeDescPrice.setAmount(1);
+            btnChangeDescPrice.setItemMeta(btnChangeDescPriceMeta);
+            shopInventory.setItem(22, btnChangeDescPrice);
         }
         // Hi Cassandra
         return shopInventory;

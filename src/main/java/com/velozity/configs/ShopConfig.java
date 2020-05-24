@@ -74,13 +74,8 @@ public class ShopConfig {
         } catch (IOException | InvalidConfigurationException e) {
             e.printStackTrace();
         }
-
-            System.out.println("Before:" + shopsConfig.get("shops." + signId));
-            shopsConfig.set("shops." + signId, null); // the part that isn't working as expected
-            System.out.println("After:" + shopsConfig.get("shops." + signId));
+            shopsConfig.set("shops." + signId, null);
             shopsConfig.save(shopsConfigFile);
-            System.out.println("Saved:" + shopsConfig.get("shops." + signId));
-
     }
 
     public Set<String> getSignIds() {
@@ -149,8 +144,13 @@ public class ShopConfig {
     }
 
     public void initiateDescChangeProcess(String signId, Player player) {
+        if(player == null) {
+            return;
+        }
+
         if(player.hasPermission("vshop.editormode")) {
             if(signIdExists(signId)) {
+                Global.pendingNewDesc.remove(player);
                 Global.pendingNewDesc.put(player, signId);
                 Global.interact.msgPlayer("Type /vs desc <new desc> - To change this items sign description.", player);
                 new java.util.Timer().schedule(
@@ -174,8 +174,13 @@ public class ShopConfig {
     }
 
     public void initiateBuyPriceChangeProcess(String signId, Player player) {
+        if(player == null) {
+            return;
+        }
+
         if(player.hasPermission("vshop.editormode")) {
             if(signIdExists(signId)) {
+                Global.pendingNewDesc.remove(player);
                 Global.pendingNewBuyPrice.put(player, signId);
                 Global.interact.msgPlayer("Type /vs buy <amount> - To change this items buy price.", player);
                 new java.util.Timer().schedule(
@@ -199,8 +204,13 @@ public class ShopConfig {
     }
 
     public void initiateSellPriceChangeProcess(String signId, Player player) {
+        if(player == null) {
+            return;
+        }
+
         if(player.hasPermission("vshop.editormode")) {
             if(signIdExists(signId)) {
+                Global.pendingNewDesc.remove(player);
                 Global.pendingNewSellPrice.put(player, signId);
                 Global.interact.msgPlayer("Type /vs sell <amount> - To change this items sell price.", player);
                 new java.util.Timer().schedule(
