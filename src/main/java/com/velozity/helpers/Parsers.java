@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 public class Parsers {
     public Integer signPrice(String line) {
-
         String toParse = line.toLowerCase().replaceAll("[^\\.0123456789]","").trim();
         if(toParse.isEmpty()) {
             return -2;
@@ -32,10 +31,7 @@ public class Parsers {
     }
 
     public Location base64ToLocation(String base64) {
-
         String decoded = new String(Base64.getDecoder().decode(base64));
-        System.out.println(decoded);
-        System.out.println(Arrays.toString(decoded.split(":")));
         World world = Bukkit.getWorld(decoded.split(":")[0]);
         double x = Double.parseDouble(decoded.split(":")[1]);
         double y = Double.parseDouble(decoded.split(":")[2]);

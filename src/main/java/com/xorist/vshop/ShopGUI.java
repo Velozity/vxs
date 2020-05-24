@@ -104,24 +104,31 @@ public class ShopGUI implements Listener {
             if(toggleValue) {
                 updateButtonTotalValues(shopInventory, playerInventory);
             }
-        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 20)) {
+        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 21)) {
             // EDIT BUY PRICE BUTTON
             String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
             Global.shopConfig.initiateBuyPriceChangeProcess(signID, player);
             player.closeInventory();
 
 
-        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 21)) {
+        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 22)) {
             // EDIT SELL PRICE BUTTON
             String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
             Global.shopConfig.initiateSellPriceChangeProcess(signID, player);
+            player.closeInventory();
+
+
+        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 23)) {
+            // EDIT DESC BUTTON
+            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
+            Global.shopConfig.initiateDescChangeProcess(signID, player);
             player.closeInventory();
         }
     }
 
     public void buyItem(Player player, Inventory shopInventory) throws IOException {
         int buyPrice = Integer.parseInt(shopInventory.getItem(2).getItemMeta().getLocalizedName());
-        int cost = buyPrice * shopInventory.getItem(4).getAmount();
+        long cost = buyPrice * shopInventory.getItem(4).getAmount();
         Inventory playerInventory = player.getInventory();
 
         // rework to fill inventory with bought item until full, then send player message saying no space is available
@@ -462,11 +469,15 @@ public class ShopGUI implements Listener {
 
         // Change Buy Price Button
         ItemStack btnChangeBuyPrice = new ItemStack(Material.ENCHANTED_BOOK);
-        ItemMeta btnChangeBuyPriceMeta = adminBuyToggleOperator.getItemMeta();
+        ItemMeta btnChangeBuyPriceMeta = btnChangeBuyPrice.getItemMeta();
 
         // Change Sell Price Button
         ItemStack btnChangeSellPrice = new ItemStack(Material.ENCHANTED_BOOK);
-        ItemMeta btnChangeSellPriceMeta = adminSellToggleOperator.getItemMeta();
+        ItemMeta btnChangeSellPriceMeta = btnChangeSellPrice.getItemMeta();
+
+        // Change Desc Button
+        ItemStack btnChangeDescPrice = new ItemStack(Material.ENCHANTED_BOOK);
+        ItemMeta btnChangeDescPriceMeta = btnChangeDescPrice.getItemMeta();
 
         // add/subtract button count logic for showing 2 outermost buttons on either side
         if(shopItem.getMaxStackSize() >= 8) {
@@ -556,7 +567,7 @@ public class ShopGUI implements Listener {
             btnChangeBuyPriceMeta.setDisplayName("Edit Buy Price");
             btnChangeBuyPrice.setAmount(1);
             btnChangeBuyPrice.setItemMeta(btnChangeBuyPriceMeta);
-            shopInventory.setItem(20, btnChangeBuyPrice);
+            shopInventory.setItem(21, btnChangeBuyPrice);
 
             if(isSellable) {
                 adminSellToggleOperatorMeta.setDisplayName("Sell: ON");
@@ -571,7 +582,12 @@ public class ShopGUI implements Listener {
             btnChangeSellPriceMeta.setDisplayName("Edit Sell Price");
             btnChangeSellPrice.setAmount(1);
             btnChangeSellPrice.setItemMeta(btnChangeSellPriceMeta);
-            shopInventory.setItem(21, btnChangeSellPrice);
+            shopInventory.setItem(22, btnChangeSellPrice);
+
+            btnChangeDescPriceMeta.setDisplayName("Edit Item Description");
+            btnChangeDescPrice.setAmount(1);
+            btnChangeDescPrice.setItemMeta(btnChangeDescPriceMeta);
+            shopInventory.setItem(23, btnChangeDescPrice);
         }
         // Hi Cassandra
         return shopInventory;

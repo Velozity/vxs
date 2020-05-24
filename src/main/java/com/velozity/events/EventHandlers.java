@@ -52,7 +52,7 @@ public class EventHandlers implements Listener {
         Action action = e.getAction();
         Block clickedBlock = e.getClickedBlock();
         if(action == Action.RIGHT_CLICK_BLOCK) {
-            if (clickedBlock.getType().equals(Material.OAK_SIGN)) {
+            if (Global.signTypes.contains(clickedBlock.getType())) {
                 String signId = parser.locationToBase64(clickedBlock.getLocation());
                 Set<String> signIds = Global.shopConfig.getSignIds();
 
@@ -70,7 +70,7 @@ public class EventHandlers implements Listener {
     @EventHandler
     public void onBlockBreak(BlockBreakEvent e) throws IOException {
 
-        if (e.getBlock().getType().equals(Material.OAK_SIGN)) {
+        if (Global.signTypes.contains(e.getBlock().getType())) {
             org.bukkit.block.Sign ws = (org.bukkit.block.Sign)e.getBlock().getState();
             String signId = parser.locationToBase64(e.getBlock().getState().getLocation());
 
@@ -139,8 +139,8 @@ public class EventHandlers implements Listener {
 
                     String line3 = ws.getLine(2);
                     String line4 = ws.getLine(3);
-                    if(line3.isEmpty() || line4.isEmpty()) {
-                        interact.msgPlayer("You must specify either a buy or sell price", e.getPlayer());
+                    if(line3.isEmpty() && line4.isEmpty()) {
+                        interact.msgPlayer("You must specify a valid buy or sell price", e.getPlayer());
                         e.setCancelled(false);
                         return;
                     }
@@ -151,7 +151,13 @@ public class EventHandlers implements Listener {
                     int parsedLine4 = parser.signPrice(ws.getLine(3));
 
                     if(parsedLine3 == -1 || parsedLine4 == -1) {
-                        interact.msgPlayer("Invalid buy/sell syntax", e.getPlayer());
+                        interact.msgPlayer("Something went wrong parsing your buy/sell prices", e.getPlayer());
+                        e.setCancelled(false);
+                        return;
+                    }
+
+                    if(parsedLine3 == -2 && parsedLine4 == -2) {
+                        Global.interact.msgPlayer("You must specify a valid buy or sell price", e.getPlayer());
                         e.setCancelled(false);
                         return;
                     }
