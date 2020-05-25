@@ -1,8 +1,9 @@
 name: VShop
 main: com.velozity.vshop.Main
 version: 1.0
-author: Velozity
+authors: [Velozity, xorist]
 api-version: 1.15
+prefix: VShop
 
 softdepend: [Vault, PlaceholderAPI]
 

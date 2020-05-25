@@ -98,8 +98,7 @@ public class EventHandlers implements Listener {
 
                             // REMOVE SIGN SHOP
                             interact.msgPlayer("Shop removed", e.getPlayer());
-                            //interact.logServer(LogType.info, "Shop removed by " + e.getPlayer().getDisplayName() + " [Item: " + WordUtils.capitalizeFully(Global.shopConfig.getShop(signId).item.getType().toString().replace("_", " ")) + "]");
-                            System.out.println("eventhandlers: " + signId);
+                            interact.logServer(LogType.info, "Shop removed by " + e.getPlayer().getDisplayName() + " [Item: " + WordUtils.capitalizeFully(Global.shopConfig.getShop(signId).item.getType().toString().replace("_", " ")) + "]");
                             shopConfig.removeShop(signId);
                             Global.pendingRemoveSigns.remove(signId);
                             e.setCancelled(false);

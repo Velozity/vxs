@@ -57,6 +57,7 @@ public class Main extends JavaPlugin {
         Global.getMainInstance = this;
         registerCommands();
 
+        getCommand("vshop").setTabCompleter(new TabCompleter());
         getServer().getPluginManager().registerEvents(new EventHandlers(), this);
         getServer().getPluginManager().registerEvents(new ShopGUI(), this);
 
