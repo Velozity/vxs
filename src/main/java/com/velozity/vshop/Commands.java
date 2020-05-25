@@ -33,21 +33,21 @@ public class Commands implements CommandExecutor {
             if (args[0].equalsIgnoreCase("editmode") || args[0].equalsIgnoreCase("em") || args[0].equalsIgnoreCase("edit")) {
                 if (player.hasPermission(Global._permEditorMode)) {
                     if (Global.editModeEnabled.contains(player.getUniqueId())) {
-                        Global.interact.msgPlayer("Editor mode disabled!", player);
+                        Global.interact.msgPlayer("Edit mode disabled!", player);
                         Global.editModeEnabled.remove(player.getUniqueId());
-                        Global.interact.logServer(LogType.info, player.getDisplayName() + " exited editor mode");
+                        Global.interact.logServer(LogType.info, player.getDisplayName() + " exited edit mode");
                         return true;
                     }
                     Global.editModeEnabled.add(player.getUniqueId());
-                    Global.interact.logServer(LogType.info, player.getDisplayName() + " entered editor mode");
+                    Global.interact.logServer(LogType.info, player.getDisplayName() + " entered edit mode");
                     Global.interact.msgPlayer(new String[] {
-                            "Editor mode enabled!",
+                            "Edit mode enabled!",
                             "Place a sign and title it [shop] on the first line",
                             "Put the buy price per item on the 3rd line",
                             "Put the sell price per item on the 4th (last) line",
                             "Hit the sign with your item to sell",
-                            "Right click a sign in editor mode for in-game shop editing!",
-                            "Exit editor mode by typing /vs em again"
+                            "Right click a sign in edit mode for in-game shop editing!",
+                            "Exit edit mode by typing /vs em again"
                     }, player);
                 } else {
                     Global.interact.msgPlayer("You do not have access to this command", player);
@@ -71,8 +71,10 @@ public class Commands implements CommandExecutor {
                                 return true;
                             }
 
-                            sign.setLine(2, Global.mainConfig.readSetting("shop", "buyprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
-                            sign.update(true);
+                            if(shop.buyable) {
+                                sign.setLine(2, Global.mainConfig.readSetting("shop", "buyprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
+                                sign.update(true);
+                            }
                             Global.pendingNewBuyPrice.remove(player);
                             Global.interact.msgPlayer("You have changed the buy price to " + (String)Global.mainConfig.readSetting("shop", "currencysymbol") + price, player);
                         }
@@ -103,9 +105,10 @@ public class Commands implements CommandExecutor {
                                 Global.pendingNewSellPrice.remove(player);
                                 return true;
                             }
-
-                            sign.setLine(3, Global.mainConfig.readSetting("shop", "sellprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
-                            sign.update(true);
+                            if(shop.sellable) {
+                                sign.setLine(3, Global.mainConfig.readSetting("shop", "sellprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
+                                sign.update(true);
+                            }
                             Global.pendingNewSellPrice.remove(player);
                             Global.interact.msgPlayer("You have changed the sell price to " + (String)Global.mainConfig.readSetting("shop", "currencysymbol") + price, player);
                         }
@@ -138,7 +141,7 @@ public class Commands implements CommandExecutor {
                         }
                     }
                 } else {
-                    Global.interact.msgPlayer("You have not selected a shop to change the desc for. Try to right click a sign shop in editor mode", player);
+                    Global.interact.msgPlayer("You have not selected a shop to change the desc for. Try to right click a sign shop in edit mode", player);
                     return true;
                 }
             }

@@ -26,6 +26,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -72,6 +73,7 @@ public class EventHandlers implements Listener {
 
         if (Global.signTypes.contains(e.getBlock().getType())) {
             org.bukkit.block.Sign ws = (org.bukkit.block.Sign)e.getBlock().getState();
+
             String signId = parser.locationToBase64(e.getBlock().getState().getLocation());
 
             Boolean signIdExists = Global.shopConfig.signIdExists(signId);
@@ -91,7 +93,7 @@ public class EventHandlers implements Listener {
 
                             // Does user have permission to destroy shops?
                             if(!e.getPlayer().hasPermission(Global._permDestroyShop)) {
-                                interact.msgPlayer("You do not have permission to destroy shops!", e.getPlayer());
+                                interact.msgPlayer("You do not have permission to destroy shops", e.getPlayer());
                                 e.setCancelled(true);
                                 return;
                             }
@@ -106,7 +108,7 @@ public class EventHandlers implements Listener {
                         } else {
                             // Does user have permission to destroy shops?
                             if(!e.getPlayer().hasPermission(Global._permDestroyShop)) {
-                                interact.msgPlayer("You do not have permission to destroy shops!", e.getPlayer());
+                                interact.msgPlayer("You do not have permission to destroy shops", e.getPlayer());
                                 e.setCancelled(true);
                                 return;
                             }
@@ -133,6 +135,10 @@ public class EventHandlers implements Listener {
                     if(!e.getPlayer().hasPermission(Global._permCreateShop)) {
                         interact.msgPlayer("You do not have permission to create shops!", e.getPlayer());
                         e.setCancelled(true);
+                        return;
+                    }
+
+                    if(!ws.getLine(0).equalsIgnoreCase("[shop]")) {
                         return;
                     }
 
@@ -194,6 +200,13 @@ public class EventHandlers implements Listener {
                     interact.logServer(LogType.info, "Shop created by " + e.getPlayer().getDisplayName() + " [Item: " + displayItemName + "]");
                     e.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if(Global.editModeEnabled.contains(event.getPlayer().getUniqueId())) {
+            Global.interact.msgPlayer("Reminder: You are still in edit mode", event.getPlayer());
         }
     }
 }
