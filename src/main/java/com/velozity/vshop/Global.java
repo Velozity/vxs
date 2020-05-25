@@ -11,6 +11,7 @@ import com.xorist.vshop.ShopGUI;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -25,6 +26,7 @@ public class Global {
     public static Economy econ = null;
     public static Permission perms = null;
     public static Chat chat = null;
+    public static Metrics metrics = null;
 
     public static final MainConfig mainConfig = new MainConfig();
     public static final ShopConfig shopConfig = new ShopConfig();

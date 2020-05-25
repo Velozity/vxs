@@ -21,6 +21,7 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Sign;
@@ -56,6 +57,8 @@ public class Main extends JavaPlugin {
     public void onEnable() {
         Global.getMainInstance = this;
         registerCommands();
+
+        Global.metrics = new Metrics(this, 7646);
 
         getCommand("vshop").setTabCompleter(new TabCompleter());
         getServer().getPluginManager().registerEvents(new EventHandlers(), this);

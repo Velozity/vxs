@@ -5,6 +5,7 @@ import com.velozity.vshop.Global;
 import com.velozity.vshop.Main;
 
 import lombok.Getter;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -28,6 +29,7 @@ public class ShopConfig {
 
     public Boolean setupWorkspace() throws IOException {
         createShopsConfig();
+        Global.metrics.addCustomChart(new Metrics.SingleLineChart("shops_created", () -> getSignIds().size()));
         return true;
     }
 
