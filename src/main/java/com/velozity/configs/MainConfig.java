@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 public class MainConfig {
 
     private static final Logger log = Logger.getLogger("Minecraft");
-    private static final String workPath = "plugins/VShop";
+    private static final String workPath = "plugins/VXS";
     @Getter
     private FileConfiguration mainConfig;
     private File mainConfigFile;
@@ -82,6 +82,14 @@ public class MainConfig {
         getMainConfig().addDefault("settings.system.maxloggingsize", 10);
         getMainConfig().addDefault("settings.system.stats", true);
 
+        // MySQL settings
+        getMainConfig().addDefault("settings.mysql.enabled", false);
+        getMainConfig().addDefault("settings.mysql.host", "127.0.0.1");
+        getMainConfig().addDefault("settings.mysql.port", 3306);
+        getMainConfig().addDefault("settings.mysql.usessl", false);
+        getMainConfig().addDefault("settings.mysql.database", "db");
+        getMainConfig().addDefault("settings.mysql.username", "root");
+        getMainConfig().addDefault("settings.mysql.password", "1234");
         getMainConfig().options().copyDefaults(true);
         getMainConfig().save(mainConfigFile);
     }

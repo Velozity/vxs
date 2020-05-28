@@ -18,13 +18,13 @@ public class Commands implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String commandLabel, String[] args) {
         if (!(sender instanceof Player)) {
-            Global.log.info("Only players are supported for VShop");
+            Global.log.info("Only players are supported for VXS");
             return true;
         }
 
         Player player = (Player) sender;
 
-        if (commandLabel.equals("vshop") || commandLabel.equals("vs")) {
+        if (commandLabel.equals("vxs") || commandLabel.equals("vs")) {
             if(args.length == 0) {
                 Global.interact.msgPlayer("Type /vs help for more information", player);
                 return true;
@@ -33,22 +33,14 @@ public class Commands implements CommandExecutor {
             if (args[0].equalsIgnoreCase("editmode") || args[0].equalsIgnoreCase("em") || args[0].equalsIgnoreCase("edit")) {
                 if (player.hasPermission(Global._permEditorMode)) {
                     if (Global.editModeEnabled.contains(player.getUniqueId())) {
-                        Global.interact.msgPlayer("Edit mode disabled!", player);
+                        Global.interact.msgPlayer("Edit mode disabled", player);
                         Global.editModeEnabled.remove(player.getUniqueId());
-                        Global.interact.logServer(LogType.info, player.getDisplayName() + " exited edit mode");
+                        Global.interact.logServer(LogType.info, player.getDisplayName() + " left edit mode");
                         return true;
                     }
                     Global.editModeEnabled.add(player.getUniqueId());
                     Global.interact.logServer(LogType.info, player.getDisplayName() + " entered edit mode");
-                    Global.interact.msgPlayer(new String[] {
-                            "Edit mode enabled!",
-                            "Place a sign and title it [shop] on the first line",
-                            "Put the buy price per item on the 3rd line",
-                            "Put the sell price per item on the 4th (last) line",
-                            "Hit the sign with your item to sell",
-                            "Right click a sign in edit mode for in-game shop editing!",
-                            "Exit edit mode by typing /vs em again"
-                    }, player);
+                    Global.interact.msgPlayer("Edit mode enabled", player);
                 } else {
                     Global.interact.msgPlayer("You do not have access to this command", player);
                 }
@@ -64,12 +56,7 @@ public class Commands implements CommandExecutor {
                             Shop shop = Global.shopConfig.getShop(signId);
                             shop.buyprice = price;
 
-                            try {
-                                Global.shopConfig.writeShop(signId, shop);
-                            } catch (IOException e) {
-                                Global.interact.msgPlayer("An error occured making this change", player);
-                                return true;
-                            }
+                            Global.shopConfig.writeShop(signId, shop);
 
                             if(shop.buyable) {
                                 sign.setLine(2, Global.mainConfig.readSetting("shop", "buyprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
@@ -98,13 +85,7 @@ public class Commands implements CommandExecutor {
                             Shop shop = Global.shopConfig.getShop(signId);
                             shop.sellprice = price;
 
-                            try {
-                                Global.shopConfig.writeShop(signId, shop);
-                            } catch (IOException e) {
-                                Global.interact.msgPlayer("An error occurred making this change", player);
-                                Global.pendingNewSellPrice.remove(player);
-                                return true;
-                            }
+                            Global.shopConfig.writeShop(signId, shop);
                             if(shop.sellable) {
                                 sign.setLine(3, Global.mainConfig.readSetting("shop", "sellprefix") + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + price);
                                 sign.update(true);
@@ -169,16 +150,19 @@ public class Commands implements CommandExecutor {
                 }
             }
             else if (args[0].equals("help")) {
-                List<String> toPrint = new ArrayList<>();
-                    toPrint.add("/vs <editmode/edit/em> - Toggle editor mode");
-                    toPrint.add("/vs stats - Show some neat statistics");
-
-                toPrint.add("/vs help - Show this message");
-                Global.interact.msgPlayer(toPrint.toArray(new String[0]), player);
+                Global.interact.msgPlayer(new String[] {
+                        "Help:",
+                        "/vs <editmode/edit/em> - Toggle edit mode",
+                        "/vs buy <price> - Right click a sign in edit mode and change the buy price for more info",
+                        "/vs sell <price> - Right click a sign in edit mode and change the sell price for more info",
+                        "/vs title <title> - Right click a sign in edit mode and change the title for more info",
+                        "/vs stats - Show some neat statistics",
+                        "/vs help - Show this message"
+                }, player);
             }
 
             else {
-                Global.interact.msgPlayer("Invalid command! Use /help", player);
+                Global.interact.msgPlayer("Invalid command! Use /vs help", player);
             }
         }
         return false;

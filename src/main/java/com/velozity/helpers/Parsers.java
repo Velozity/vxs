@@ -5,13 +5,18 @@ import com.velozity.vshop.Global;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.spigotmc.TicksPerSecondCommand;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Parsers {
+    public Integer secsToTicks(Integer secs) {
+        return secs * 20;
+    }
+
     public Integer signPrice(String line) {
-        String toParse = line.toLowerCase().replaceAll("[^\\.0123456789]","").trim();
+        String toParse = line.toLowerCase().replaceAll("[^\\.0123456789]","").replace(".", "").trim();
         if(toParse.isEmpty()) {
             return -2;
         }

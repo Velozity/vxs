@@ -11,13 +11,12 @@ import com.velozity.configs.ShopConfig;
 
 import com.xorist.vshop.ShopGUI;
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -49,7 +48,6 @@ public class EventHandlers implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
-        Player player = e.getPlayer();
         Action action = e.getAction();
         Block clickedBlock = e.getClickedBlock();
         if(action == Action.RIGHT_CLICK_BLOCK) {
@@ -115,30 +113,31 @@ public class EventHandlers implements Listener {
 
                             interact.msgPlayer("Hit sign again to remove shop", e.getPlayer());
                             Global.pendingRemoveSigns.add(signId);
-                            new java.util.Timer().schedule(
-                                    new java.util.TimerTask() {
-                                        @Override
-                                        public void run() {
-                                            if(Global.pendingRemoveSigns.contains(signId)){
-                                                Global.pendingRemoveSigns.remove(signId);
-                                                interact.msgPlayer("No 2nd hit detected - timed out", e.getPlayer());
-                                            }
-                                        }
-                                    },
-                                    5000
-                            );
+                            Bukkit.getScheduler().runTaskLaterAsynchronously(Global.getMainInstance, () -> {
+                                if (Global.pendingRemoveSigns.contains(signId)) {
+                                    Global.pendingRemoveSigns.remove(signId);
+                                    interact.msgPlayer("No 2nd hit detected - timed out", e.getPlayer());
+                                }
+                            }, parser.secsToTicks(5));
                         }
+                        e.setCancelled(true);
+                        return;
+                    }
+
+                    // Check if sign is a sign that should be armed
+                    if(!ws.getLine(0).equalsIgnoreCase("[shop]")) {
+                        return;
+                    }
+                    // Check if item is not air
+                    if(e.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.AIR)) {
+                        interact.msgPlayer("You must have an item to sell in your hand", e.getPlayer());
                         e.setCancelled(true);
                         return;
                     }
                     // Does user have permission to create shops?
                     if(!e.getPlayer().hasPermission(Global._permCreateShop)) {
-                        interact.msgPlayer("You do not have permission to create shops!", e.getPlayer());
+                        interact.msgPlayer("You do not have permission to create shops", e.getPlayer());
                         e.setCancelled(true);
-                        return;
-                    }
-
-                    if(!ws.getLine(0).equalsIgnoreCase("[shop]")) {
                         return;
                     }
 
