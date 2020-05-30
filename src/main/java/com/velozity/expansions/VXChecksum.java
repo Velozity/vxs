@@ -18,13 +18,13 @@ public class VXChecksum {
     public VXChecksum(Plugin plugin) {
         Bukkit.getScheduler().runTaskAsynchronously(Global.getMainInstance, () -> {
             String server = "https://vxdev.org/secure/checksum/version/" + Global.projectId;
-            Version current = new Version(plugin.getDescription().getVersion());
+            String current = plugin.getDescription().getVersion();
 
             try {
                 URL check = new URL(server);
                 HttpsURLConnection connection = (HttpsURLConnection) check.openConnection();
                 connection.setRequestMethod("GET");
-                connection.setConnectTimeout(5000);
+                connection.setConnectTimeout(10000);
                 connection.connect();
 
                 if(connection.getResponseCode() == 404) {
@@ -39,8 +39,8 @@ public class VXChecksum {
                 while ((inputLine = in.readLine()) != null)
                     res.append(inputLine);
 
-                if (current.compareTo(new Version(res.toString())) < 0) {
-                    Global.interact.logServer(LogType.info, "NEW VERSION DETECTED - Download at vxdev.org/projects/" + Global.projectId);
+                if (!current.equals(res.toString())) {
+                    Global.interact.logServer(LogType.info, "NEW VERSION DETECTED - Download at https://vxdev.org/projects/" + Global.projectId);
                 }
                 in.close();
 
