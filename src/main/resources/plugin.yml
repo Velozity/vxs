@@ -1,29 +1,29 @@
-name: VShop
+name: VXSignShop
 main: com.velozity.vshop.Main
-version: 1.0
+version: 1.0.0
 authors: [Velozity, xorist]
 api-version: 1.15
-prefix: VShop
+prefix: VXS
 
 softdepend: [Vault, PlaceholderAPI]
 
 commands:
-  vshop:
-    description: Commands for VShop
+  vxs:
+    description: Commands for VXS
     aliases: vs
 
 permissions:
-  vshop.admin:
+  vxs.admin:
     description: All permissions to setup an admin sign shop
     children:
-      vshop.createshop: true
-      vshop.destroyshop: true
-      vshop.editormode: true
-      vshop.stats: true
-  vshop.mod:
+      vxs.createshop: true
+      vxs.destroyshop: true
+      vxs.editmode: true
+      vxs.stats: true
+  vxs.mod:
     description: Permissions to manage sign shops (not create or destroy)
     children:
-      vshop.createshop: false
-      vshop.destroyshop: false
-      vshop.editormode: true
-      vshop.stats: true
+      vxs.createshop: false
+      vxs.destroyshop: false
+      vxs.editmode: true
+      vxs.stats: true

@@ -11,13 +11,12 @@ import com.velozity.configs.ShopConfig;
 
 import com.xorist.vshop.ShopGUI;
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -26,6 +25,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
@@ -48,7 +48,6 @@ public class EventHandlers implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
-        Player player = e.getPlayer();
         Action action = e.getAction();
         Block clickedBlock = e.getClickedBlock();
         if(action == Action.RIGHT_CLICK_BLOCK) {
@@ -72,6 +71,7 @@ public class EventHandlers implements Listener {
 
         if (Global.signTypes.contains(e.getBlock().getType())) {
             org.bukkit.block.Sign ws = (org.bukkit.block.Sign)e.getBlock().getState();
+
             String signId = parser.locationToBase64(e.getBlock().getState().getLocation());
 
             Boolean signIdExists = Global.shopConfig.signIdExists(signId);
@@ -91,7 +91,7 @@ public class EventHandlers implements Listener {
 
                             // Does user have permission to destroy shops?
                             if(!e.getPlayer().hasPermission(Global._permDestroyShop)) {
-                                interact.msgPlayer("You do not have permission to destroy shops!", e.getPlayer());
+                                interact.msgPlayer("You do not have permission to destroy shops", e.getPlayer());
                                 e.setCancelled(true);
                                 return;
                             }
@@ -106,32 +106,37 @@ public class EventHandlers implements Listener {
                         } else {
                             // Does user have permission to destroy shops?
                             if(!e.getPlayer().hasPermission(Global._permDestroyShop)) {
-                                interact.msgPlayer("You do not have permission to destroy shops!", e.getPlayer());
+                                interact.msgPlayer("You do not have permission to destroy shops", e.getPlayer());
                                 e.setCancelled(true);
                                 return;
                             }
 
                             interact.msgPlayer("Hit sign again to remove shop", e.getPlayer());
                             Global.pendingRemoveSigns.add(signId);
-                            new java.util.Timer().schedule(
-                                    new java.util.TimerTask() {
-                                        @Override
-                                        public void run() {
-                                            if(Global.pendingRemoveSigns.contains(signId)){
-                                                Global.pendingRemoveSigns.remove(signId);
-                                                interact.msgPlayer("No 2nd hit detected - timed out", e.getPlayer());
-                                            }
-                                        }
-                                    },
-                                    5000
-                            );
+                            Bukkit.getScheduler().runTaskLaterAsynchronously(Global.getMainInstance, () -> {
+                                if (Global.pendingRemoveSigns.contains(signId)) {
+                                    Global.pendingRemoveSigns.remove(signId);
+                                    interact.msgPlayer("No 2nd hit detected - timed out", e.getPlayer());
+                                }
+                            }, parser.secsToTicks(5));
                         }
+                        e.setCancelled(true);
+                        return;
+                    }
+
+                    // Check if sign is a sign that should be armed
+                    if(!ws.getLine(0).equalsIgnoreCase("[shop]")) {
+                        return;
+                    }
+                    // Check if item is not air
+                    if(e.getPlayer().getInventory().getItemInMainHand().getType().equals(Material.AIR)) {
+                        interact.msgPlayer("You must have an item to sell in your hand", e.getPlayer());
                         e.setCancelled(true);
                         return;
                     }
                     // Does user have permission to create shops?
                     if(!e.getPlayer().hasPermission(Global._permCreateShop)) {
-                        interact.msgPlayer("You do not have permission to create shops!", e.getPlayer());
+                        interact.msgPlayer("You do not have permission to create shops", e.getPlayer());
                         e.setCancelled(true);
                         return;
                     }
@@ -194,6 +199,13 @@ public class EventHandlers implements Listener {
                     interact.logServer(LogType.info, "Shop created by " + e.getPlayer().getDisplayName() + " [Item: " + displayItemName + "]");
                     e.setCancelled(true);
             }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if(Global.editModeEnabled.contains(event.getPlayer().getUniqueId())) {
+            Global.interact.msgPlayer("Reminder: You are still in edit mode", event.getPlayer());
         }
     }
 }

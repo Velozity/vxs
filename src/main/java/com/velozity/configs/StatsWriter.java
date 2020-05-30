@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class StatsWriter {
 
     private static final Logger log = Logger.getLogger("Minecraft");
-    private static final String workPath = "plugins/VShop";
+    private static final String workPath = "plugins/VXS";
     @Getter
     private FileConfiguration statsConfig;
     private File statsConfigFile;

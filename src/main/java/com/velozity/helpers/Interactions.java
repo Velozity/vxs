@@ -4,6 +4,7 @@ import com.google.common.collect.ObjectArrays;
 import com.velozity.types.LogType;
 import com.velozity.vshop.Global;
 import com.velozity.vshop.Main;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
@@ -35,7 +36,7 @@ public class Interactions {
                 break;
         }
 
-        Global.getMainInstance.getServer().getConsoleSender().sendMessage(ChatColor.DARK_RED + "[VShop] " + logType + msg);
+        Global.getMainInstance.getServer().getConsoleSender().sendMessage(ChatColor.DARK_RED + "[VXS] " + logType + msg);
 
         if((Boolean) Global.mainConfig.readSetting("system", "filelogging")) {
             LocalDate date = LocalDate.now();
@@ -50,52 +51,55 @@ public class Interactions {
     }
 
     private void writeToLogFile(String msg) {
-        try {
-            File file = new File("plugins/VShop/Logs", "log.txt");
+            Bukkit.getScheduler().runTaskAsynchronously(Global.getMainInstance, () -> {
+                try {
+                    File file = new File("plugins/VXS/Logs", "log.txt");
 
-            if(!file.exists()) {
-                if(file.getParentFile().mkdir())
-                file.createNewFile();
-            }
+                    String parsed = msg.replace("§4", "").replace("§r", "");
 
-            if(file.length() > ((Integer)Global.mainConfig.readSetting("system", "maxloggingsize") * 1e+6)) {
-                LocalDate date = LocalDate.now();
-                DateTimeFormatter dateF = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+                    if(!file.exists()) {
+                        if(file.getParentFile().mkdir())
+                        file.createNewFile();
+                    }
 
-                FileOutputStream fos = new FileOutputStream("plugins/VShop/Logs/Logs-" + date.format(dateF) + ".zip");
-                ZipOutputStream zipOut = new ZipOutputStream(fos);
-                FileInputStream fis = new FileInputStream(file);
-                ZipEntry zipEntry = new ZipEntry(file.getName());
-                zipOut.putNextEntry(zipEntry);
-                byte[] bytes = new byte[1024];
-                int length;
-                while((length = fis.read(bytes)) >= 0) {
-                    zipOut.write(bytes, 0, length);
+                    if(file.length() > ((Integer)Global.mainConfig.readSetting("system", "maxloggingsize") * 1e+6)) {
+                        LocalDate date = LocalDate.now();
+                        DateTimeFormatter dateF = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+
+                        FileOutputStream fos = new FileOutputStream("plugins/VXS/Logs/Logs-" + date.format(dateF) + ".zip");
+                        ZipOutputStream zipOut = new ZipOutputStream(fos);
+                        FileInputStream fis = new FileInputStream(file);
+                        ZipEntry zipEntry = new ZipEntry(file.getName());
+                        zipOut.putNextEntry(zipEntry);
+                        byte[] bytes = new byte[1024];
+                        int length;
+                        while((length = fis.read(bytes)) >= 0) {
+                            zipOut.write(bytes, 0, length);
+                        }
+                        zipOut.close();
+                        fis.close();
+                        fos.close();
+                        file.delete();
+                    }
+
+                    BufferedWriter writer = new BufferedWriter(
+                            new FileWriter("plugins/VXS/Logs/log.txt", true)  //Set true for append mode
+                    );
+                    writer.write(parsed);
+                    writer.newLine();   //Add new line
+                    writer.close();
+                    } catch (IOException ex) {
+                        Global.getMainInstance.getServer().getConsoleSender().sendMessage(ChatColor.DARK_RED + "[VXS] " + "UNABLE TO WRITE TO LOG FILE! PLEASE DISABLE FILE LOGGING OR FIX FILE PERMISSIONS.");
                 }
-                zipOut.close();
-                fis.close();
-                fos.close();
-                file.delete();
-            }
-
-            BufferedWriter writer = new BufferedWriter(
-                    new FileWriter("plugins/VShop/Logs/log.txt", true)  //Set true for append mode
-            );
-            writer.write(msg);
-            writer.newLine();   //Add new line
-            writer.close();
-
-        } catch (IOException ex) {
-            Global.getMainInstance.getServer().getConsoleSender().sendMessage(ChatColor.DARK_RED + "[VShop] " + "UNABLE TO WRITE TO LOG FILE! PLEASE DISABLE FILE LOGGING OR FIX FILE PERMISSIONS.");
-        }
+            });
     }
 
     public void msgPlayer(String msg, Player player) {
-        player.sendMessage("§4[VShop]§r " + msg);
+        player.sendMessage("§4[VXS]§r " + msg);
     }
 
     public void msgPlayer(String[] msg, Player player) {
-        player.sendMessage(ObjectArrays.concat("§4[VShop]§r", msg));
+        player.sendMessage(ObjectArrays.concat("§4[VXS]§r", msg));
     }
 
 }

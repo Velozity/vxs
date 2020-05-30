@@ -68,7 +68,7 @@ public class ShopGUI implements Listener {
         } else if(clickedItemSlot == 12) {
             // BUY BUTTON
             if(clickedItem.getType() == Material.BARRIER) {
-                interact.msgPlayer("You cannot buy this item.", player);
+                interact.msgPlayer("You cannot buy this item", player);
             } else {
                 buyItem(player, shopInventory);
                 updateButtonTotalValues(shopInventory, playerInventory);
@@ -76,7 +76,7 @@ public class ShopGUI implements Listener {
         } else if(clickedItemSlot == 13) {
             // SELL BUTTON
             if(clickedItem.getType() == Material.BARRIER) {
-                interact.msgPlayer("You cannot sell this item.", player);
+                interact.msgPlayer("You cannot sell this item", player);
             } else {
                 sellItem(player, shopInventory);
                 updateButtonTotalValues(shopInventory, playerInventory);
@@ -92,7 +92,7 @@ public class ShopGUI implements Listener {
         } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 18)) {
             // BUY TOGGLE BUTTON
             String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
-            boolean toggleValue = toggleBuyItems(shopInventory, signID);
+            boolean toggleValue = toggleBuyItems(shopInventory, signID, player);
             if(toggleValue) {
                 updateButtonTotalValues(shopInventory, playerInventory);
             }
@@ -100,7 +100,7 @@ public class ShopGUI implements Listener {
         } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 19)) {
             // SELL TOGGLE BUTTON
             String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
-            boolean toggleValue = toggleSellItems(shopInventory, signID);
+            boolean toggleValue = toggleSellItems(shopInventory, signID, player);
             if(toggleValue) {
                 updateButtonTotalValues(shopInventory, playerInventory);
             }
@@ -237,7 +237,7 @@ public class ShopGUI implements Listener {
     }
 
     // To-Do: Change toggle button display name to opposite of what it was
-    public boolean toggleBuyItems(Inventory shopInventory, String signID) throws IOException {
+    public boolean toggleBuyItems(Inventory shopInventory, String signID, Player player) throws IOException {
         Shop shop = Global.shopConfig.getShop(signID);
         List<String> emptyLore = new ArrayList<>();
         if(shop != null) {
@@ -256,20 +256,24 @@ public class ShopGUI implements Listener {
                     Sign sign = (Sign)Global.parser.base64ToLocation(signID).getBlock().getState();
                     String oldLine = sign.getLine(2);
 
-                    sign.setLine(2, "SOLD OUT");
+                    sign.setLine(2, Global.mainConfig.readSetting("shop", "soldout").toString());
                     sign.update();
                 }
-            } else  {
-                shop.buyable = true;
-                buyToggleButtonMeta.setDisplayName("Buy: ON");
-                shopInventory.getItem(12).setType(Material.GREEN_STAINED_GLASS);
-                buyButtonMeta.setDisplayName("Buy");
+            } else {
+                if (shop.buyprice != -2) {
+                    shop.buyable = true;
+                    buyToggleButtonMeta.setDisplayName("Buy: ON");
+                    shopInventory.getItem(12).setType(Material.GREEN_STAINED_GLASS);
+                    buyButtonMeta.setDisplayName("Buy");
 
-                // Change sign text
-                if(!Global.parser.base64ToLocation(signID).getBlock().isEmpty()) {
-                    Sign sign = (Sign)Global.parser.base64ToLocation(signID).getBlock().getState();
-                    sign.setLine(2, Global.mainConfig.readSetting("shop", "buyprefix").toString() + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + shop.buyprice);
-                    sign.update();
+                    // Change sign text
+                    if (!Global.parser.base64ToLocation(signID).getBlock().isEmpty()) {
+                        Sign sign = (Sign) Global.parser.base64ToLocation(signID).getBlock().getState();
+                        sign.setLine(2, Global.mainConfig.readSetting("shop", "buyprefix").toString() + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + shop.buyprice);
+                        sign.update();
+                    }
+                } else {
+                    Global.interact.msgPlayer("Shop does not have a valid buy price to open", player);
                 }
             }
             buyButtonMeta.setLore(emptyLore);
@@ -277,12 +281,13 @@ public class ShopGUI implements Listener {
             buyToggleButton.setItemMeta(buyToggleButtonMeta);
             Global.shopConfig.writeShop(signID, shop);
             return shop.buyable;
+
         }
         return false;
     }
 
     // To-Do: Change toggle button display name to opposite of what it was
-    public boolean toggleSellItems(Inventory shopInventory, String signID) throws IOException {
+    public boolean toggleSellItems(Inventory shopInventory, String signID, Player player) throws IOException {
         Shop shop = Global.shopConfig.getShop(signID);
         List<String> emptyLore = new ArrayList<>();
         if(shop != null) {
@@ -306,19 +311,23 @@ public class ShopGUI implements Listener {
                     sign.setLine(3, "");
                     sign.update();
                 }
-            } else  {
-                shop.sellable = true;
-                sellToggleButtonMeta.setDisplayName("Sell: ON");
-                shopInventory.getItem(13).setType(Material.RED_STAINED_GLASS);
-                shopInventory.getItem(14).setType(Material.RED_STAINED_GLASS);
-                sellButtonMeta.setDisplayName("Sell");
-                sellAllButtonMeta.setDisplayName("Sell All");
+            } else {
+                if (shop.sellprice != -2) {
+                    shop.sellable = true;
+                    sellToggleButtonMeta.setDisplayName("Sell: ON");
+                    shopInventory.getItem(13).setType(Material.RED_STAINED_GLASS);
+                    shopInventory.getItem(14).setType(Material.RED_STAINED_GLASS);
+                    sellButtonMeta.setDisplayName("Sell");
+                    sellAllButtonMeta.setDisplayName("Sell All");
 
-                // Change sign text
-                if(!Global.parser.base64ToLocation(signID).getBlock().isEmpty()) {
-                    Sign sign = (Sign)Global.parser.base64ToLocation(signID).getBlock().getState();
-                    sign.setLine(3, Global.mainConfig.readSetting("shop", "sellprefix").toString() + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + shop.sellprice);
-                    sign.update();
+                    // Change sign text
+                    if (!Global.parser.base64ToLocation(signID).getBlock().isEmpty()) {
+                        Sign sign = (Sign) Global.parser.base64ToLocation(signID).getBlock().getState();
+                        sign.setLine(3, Global.mainConfig.readSetting("shop", "sellprefix").toString() + " " + Global.mainConfig.readSetting("shop", "currencysymbol") + shop.sellprice);
+                        sign.update();
+                    }
+                } else {
+                    Global.interact.msgPlayer("Shop does not have a valid sell price to open selling", player);
                 }
             }
             sellAllButtonMeta.setLore(emptyLore);
@@ -423,7 +432,7 @@ public class ShopGUI implements Listener {
         if(!Global.editModeEnabled.contains(player.getUniqueId())) {
             shopInventory = Bukkit.createInventory(null, 18, title);
         } else {
-            shopInventory = Bukkit.createInventory(null, 27, title + " (edit mode)");
+            shopInventory = Bukkit.createInventory(null, 27, title + " - Edit Mode");
         }
 
         // ADD BUTTONS

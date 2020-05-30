@@ -5,6 +5,8 @@ import com.velozity.configs.ShopConfig;
 import com.velozity.events.EventHandlers;
 
 import com.velozity.expansions.PlaceholderAPIExpansion;
+import com.velozity.expansions.VXChecksum;
+import com.velozity.helpers.DatabaseHelper;
 import com.velozity.helpers.Interactions;
 import com.velozity.types.LogType;
 import com.velozity.types.Shop;
@@ -12,6 +14,7 @@ import com.xorist.vshop.ShopGUI;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -21,6 +24,7 @@ import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import net.milkbowl.vault.permission.Permission;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Sign;
@@ -55,9 +59,13 @@ public class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         Global.getMainInstance = this;
+        new VXChecksum(this);
+
         registerCommands();
 
-        getCommand("vshop").setTabCompleter(new TabCompleter());
+        Global.metrics = new Metrics(this, 7646);
+
+        getCommand("vxs").setTabCompleter(new TabCompleter());
         getServer().getPluginManager().registerEvents(new EventHandlers(), this);
         getServer().getPluginManager().registerEvents(new ShopGUI(), this);
 
@@ -71,11 +79,14 @@ public class Main extends JavaPlugin {
                 log.severe(String.format("[%s] - Disabled due to insufficient file privileges!", getDescription().getName()));
                 getServer().getPluginManager().disablePlugin(this);
             }
+
             if((Boolean)mainConfig.readSetting("system", "stats"))
                 Global.statsWriter.setupWorkspace();
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException | SQLException | ClassNotFoundException e) {
+            Global.interact.logServer(LogType.error, e.getMessage());
+            Global.interact.logServer(LogType.error, "Disabling VXS due to severe error");
+            getServer().getPluginManager().disablePlugin(this);
         }
 
         if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null){
@@ -97,19 +108,15 @@ public class Main extends JavaPlugin {
     }
 
     public void registerCommands() {
-        this.getCommand("vshop").setExecutor(new Commands());
+        this.getCommand("vxs").setExecutor(new Commands());
     }
 
     public void validateSigns() {
         Global.shopConfig.getSignIds()
                 .forEach(signId -> {
                    if(Global.parser.base64ToLocation(signId).getBlock().isEmpty()) {
-                       try {
-                           interact.logServer(LogType.info, "Detected missing sign from world! Deleting its shop [Item: " + Global.shopConfig.getShop(signId).item.getType().name() + "]");
-                           Global.shopConfig.removeShop(signId);
-                       } catch (IOException e) {
-                           interact.logServer(LogType.error, "Failed to remove a shop that was attached to a missing sign");
-                       }
+                       interact.logServer(LogType.info, "Detected missing sign from world! Deleting its shop [Item: " + Global.shopConfig.getShop(signId).item.getType().name() + "]");
+                       Global.shopConfig.removeShop(signId);
                    }
                 });
     }

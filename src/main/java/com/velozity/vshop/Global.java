@@ -5,12 +5,14 @@ import com.velozity.configs.MainConfig;
 import com.velozity.configs.ShopConfig;
 import com.velozity.configs.StatsWriter;
 import com.velozity.configs.StatsWriter;
+import com.velozity.helpers.DatabaseHelper;
 import com.velozity.helpers.Interactions;
 import com.velozity.helpers.Parsers;
 import com.xorist.vshop.ShopGUI;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
@@ -19,15 +21,18 @@ import java.util.logging.Logger;
 
 public class Global {
 
+    public static final int projectId = 4;
     public static Main getMainInstance;
 
     public static final Logger log = Logger.getLogger("Minecraft");
     public static Economy econ = null;
     public static Permission perms = null;
     public static Chat chat = null;
+    public static Metrics metrics = null;
 
     public static final MainConfig mainConfig = new MainConfig();
     public static final ShopConfig shopConfig = new ShopConfig();
+    public static final DatabaseHelper database = new DatabaseHelper();
     public static final StatsWriter statsWriter = new StatsWriter();
     public static final ShopGUI shopgui = new ShopGUI();
     public static final Interactions interact = new Interactions();
