@@ -10,5 +10,8 @@
         <module name="git" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="project_files" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

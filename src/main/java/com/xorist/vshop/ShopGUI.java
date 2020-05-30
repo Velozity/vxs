@@ -128,26 +128,50 @@ public class ShopGUI implements Listener {
 
     public void buyItem(Player player, Inventory shopInventory) throws IOException {
         int buyPrice = Integer.parseInt(shopInventory.getItem(2).getItemMeta().getLocalizedName());
-        long cost = buyPrice * shopInventory.getItem(4).getAmount();
         Inventory playerInventory = player.getInventory();
+        List<Integer> itemsList = new ArrayList<>();
+        int itemsToBuyCount = shopInventory.getItem(4).getAmount();
+        int itemToBuyMaxStack = shopInventory.getItem(4).getMaxStackSize();
 
-        // rework to fill inventory with bought item until full, then send player message saying no space is available
+        int itemSlotsAvailable = 0;
 
-        if(playerInventory.firstEmpty() != -1) {
-            if(Global.econ.getBalance(player.getName()) > cost) {
-                if(Global.econ.withdrawPlayer(player.getName(), cost).transactionSuccess()) {
-                    playerInventory.setItem(playerInventory.firstEmpty(), shopInventory.getItem(4));
-                    interact.msgPlayer("You bought " + shopInventory.getItem(4).getAmount() + " item(s) for " + Global.mainConfig.readSetting("shop", "currencysymbol") + cost, player);
-                    Global.statsWriter.addTotalIncome(cost);
-                } else {
-                    interact.msgPlayer("Transaction failed", player);
+        for(int i = 0; i < 36; i++) {
+            if(playerInventory.getItem(i) != null) {
+                if(playerInventory.getItem(i).isSimilar(shopInventory.getItem(4))) {
+                    itemsList.add(i);
                 }
             } else {
-                interact.msgPlayer("You do not have enough money.", player);
+                itemSlotsAvailable += itemToBuyMaxStack;
             }
-        } else {
-            interact.msgPlayer("Your inventory is full.", player);
         }
+
+        for(int i: itemsList) {
+            if(playerInventory.getItem(i).getAmount() < itemToBuyMaxStack) {
+                itemSlotsAvailable += itemToBuyMaxStack - playerInventory.getItem(i).getAmount();
+            }
+        }
+
+        boolean hasBoughtItems = false;
+        int itemsBought = 0;
+        int moneyTaken = 0;
+        ItemStack itemToDeposit = shopInventory.getItem(4).clone();
+        itemToDeposit.setAmount(1);
+        for(int i = 0; i < itemsToBuyCount; i++) {
+            if(Global.econ.withdrawPlayer(player.getName(), buyPrice).transactionSuccess() && itemsBought < itemSlotsAvailable) {
+                moneyTaken += buyPrice;
+                hasBoughtItems = true;
+                playerInventory.addItem(itemToDeposit);
+                itemsBought++;
+            } else {
+                Global.interact.msgPlayer("You do not have enough space!", player);
+                break;
+            }
+        }
+
+        if(hasBoughtItems) {
+            interact.msgPlayer("You bought " + itemsBought + " item(s) for " + Global.mainConfig.readSetting("shop", "currencysymbol") + moneyTaken, player);
+        }
+
     }
 
     public void sellItem(Player player, Inventory shopInventory) throws IOException {
@@ -176,8 +200,8 @@ public class ShopGUI implements Listener {
         int totalMoneyGiven = 0;
         for(int i: itemsToSell) {
             for (int j = playerInventory.getItem(i).getAmount(); j > 0; j--) {
-                playerInventory.getItem(i).setAmount(playerInventory.getItem(i).getAmount() - 1);
                 if (Global.econ.depositPlayer(player.getName(), sellPrice).transactionSuccess()) {
+                    playerInventory.getItem(i).setAmount(playerInventory.getItem(i).getAmount() - 1);
                     totalMoneyGiven += sellPrice;
                     numItemsToSell--;
                     itemsSoldCounter++;
@@ -189,15 +213,14 @@ public class ShopGUI implements Listener {
                     interact.msgPlayer("Transaction failed", player);
                     break;
                 }
-                if (numItemsToSell == 0) {
-                    break;
-                }
             }
-
-            if (haveSold) {
-                interact.msgPlayer("You sold " + itemsSoldCounter + " item(s) for " + Global.mainConfig.readSetting("shop", "currencysymbol") +totalMoneyGiven, player);
-                Global.statsWriter.addTotalExpenditure(sellPrice);
+            if(numItemsToSell == 0) {
+                break;
             }
+        }
+        if (haveSold) {
+            interact.msgPlayer("You sold " + itemsSoldCounter + " item(s) for " + Global.mainConfig.readSetting("shop", "currencysymbol") +totalMoneyGiven, player);
+            Global.statsWriter.addTotalExpenditure(sellPrice);
         }
     }
 
@@ -263,7 +286,7 @@ public class ShopGUI implements Listener {
                 if (shop.buyprice != -2) {
                     shop.buyable = true;
                     buyToggleButtonMeta.setDisplayName("Buy: ON");
-                    shopInventory.getItem(12).setType(Material.GREEN_STAINED_GLASS);
+                    shopInventory.getItem(12).setType(Material.RED_STAINED_GLASS);
                     buyButtonMeta.setDisplayName("Buy");
 
                     // Change sign text
@@ -315,8 +338,8 @@ public class ShopGUI implements Listener {
                 if (shop.sellprice != -2) {
                     shop.sellable = true;
                     sellToggleButtonMeta.setDisplayName("Sell: ON");
-                    shopInventory.getItem(13).setType(Material.RED_STAINED_GLASS);
-                    shopInventory.getItem(14).setType(Material.RED_STAINED_GLASS);
+                    shopInventory.getItem(13).setType(Material.GREEN_STAINED_GLASS);
+                    shopInventory.getItem(14).setType(Material.GREEN_STAINED_GLASS);
                     sellButtonMeta.setDisplayName("Sell");
                     sellAllButtonMeta.setDisplayName("Sell All");
 
@@ -354,6 +377,7 @@ public class ShopGUI implements Listener {
     }
 
     public void updateButtonTotalValues(Inventory shopInventory, Inventory playerInventory) {
+        String currency = (String)Global.mainConfig.readSetting("shop", "currencysymbol");
         int buyPrice = Integer.parseInt(shopInventory.getItem(2).getItemMeta().getLocalizedName());
         int sellPrice = Integer.parseInt(shopInventory.getItem(6).getItemMeta().getLocalizedName());
         int totalSellableItems = sumShopItemsInPlayerInventory(shopInventory, playerInventory);
@@ -366,17 +390,17 @@ public class ShopGUI implements Listener {
         ItemMeta sellButtonMeta = shopInventory.getItem(13).getItemMeta();
         ItemMeta sellAllButtonMeta = shopInventory.getItem(14).getItemMeta();
 
-        buyLore.add("Total: " + shopItemCount * buyPrice);
+        buyLore.add("Total: " + ChatColor.RED + currency + shopItemCount * buyPrice);
         buyButtonMeta.setLore(buyLore);
 
         if(totalSellableItems <= shopItemCount) {
-            sellLore.add("Total: " + totalSellableItems * sellPrice);
+            sellLore.add("Total: " + ChatColor.GREEN + currency + totalSellableItems * sellPrice);
         } else {
-            sellLore.add("Total: " + shopItemCount * sellPrice);
+            sellLore.add("Total: " + ChatColor.GREEN + currency + shopItemCount * sellPrice);
         }
         sellButtonMeta.setLore(sellLore);
 
-        sellAllLore.add("Total: " + sellAllPrice);
+        sellAllLore.add("Total: " + ChatColor.GREEN + currency + sellAllPrice);
         sellAllButtonMeta.setLore(sellAllLore);
 
         shopInventory.getItem(12).setItemMeta(buyButtonMeta);
@@ -444,28 +468,28 @@ public class ShopGUI implements Listener {
         ItemMeta subOperatorMeta = subtractOperator.getItemMeta();
 
         // BUY BUTTON
-        ItemStack buyOperator = new ItemStack(Material.GREEN_STAINED_GLASS);
+        ItemStack buyOperator = new ItemStack(Material.RED_STAINED_GLASS);
         ItemMeta buyOperatorMeta = buyOperator.getItemMeta();
         List<String> buyOperatorLore = new ArrayList<>();
-        buyOperatorLore.add(ChatColor.GREEN + "Total: " + currency + buyPrice * shopItem.getAmount());
+        buyOperatorLore.add("Total: " + ChatColor.RED + currency + buyPrice * shopItem.getAmount());
         buyOperatorMeta.setLore(buyOperatorLore);
 
         // SELL BUTTON
-        ItemStack sellOperator = new ItemStack(Material.RED_STAINED_GLASS);
+        ItemStack sellOperator = new ItemStack(Material.GREEN_STAINED_GLASS);
         ItemMeta sellOperatorMeta = sellOperator.getItemMeta();
         List<String> sellOperatorLore = new ArrayList<>();
         if(totalSellableItems > shopItem.getAmount()) {
-            sellOperatorLore.add(ChatColor.RED + "Total: " + currency + sellPrice * shopItem.getAmount());
+            sellOperatorLore.add("Total: " + ChatColor.GREEN + currency + sellPrice * shopItem.getAmount());
         } else {
-            sellOperatorLore.add(ChatColor.RED + "Total: " + currency + sellPrice * totalSellableItems);
+            sellOperatorLore.add("Total: " + ChatColor.GREEN + currency + sellPrice * totalSellableItems);
         }
         sellOperatorMeta.setLore(sellOperatorLore);
 
         // SELL ALL BUTTON
-        ItemStack sellAllOperator = new ItemStack(Material.RED_STAINED_GLASS);
+        ItemStack sellAllOperator = new ItemStack(Material.GREEN_STAINED_GLASS);
         ItemMeta sellAllOperatorMeta = sellAllOperator.getItemMeta();
         List<String> sellAllOperatorLore = new ArrayList<>();
-        sellAllOperatorLore.add(ChatColor.RED + "Total: " + currency + totalSellableItems * sellPrice);
+        sellAllOperatorLore.add("Total: " + ChatColor.GREEN + currency + totalSellableItems * sellPrice);
         sellAllOperatorMeta.setLore(sellAllOperatorLore);
 
         // EDIT MODE BUY TOGGLE BUTTON
