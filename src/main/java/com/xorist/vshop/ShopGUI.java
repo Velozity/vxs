@@ -57,72 +57,69 @@ public class ShopGUI implements Listener {
         }
 
         // Handle button clicks
-        if(clickedItemSlot >= 0 && clickedItemSlot <= 2) {
-            // SUBTRACT BUTTONS
-            subtractFromShopItem(shopInventory, clickedItemSlot);
-            updateButtonTotalValues(shopInventory, playerInventory);
-        } else if(clickedItemSlot >= 6 && clickedItemSlot <= 8) {
-            // ADD BUTTONS
-            addToShopItem(shopInventory, clickedItemSlot);
-            updateButtonTotalValues(shopInventory, playerInventory);
-        } else if(clickedItemSlot == 12) {
-            // BUY BUTTON
-            if(clickedItem.getType() == Material.BARRIER) {
-                interact.msgPlayer("You cannot buy this item", player);
-            } else {
-                buyItem(player, shopInventory);
+        if(e.getClick() != ClickType.DOUBLE_CLICK) {
+            if(clickedItemSlot >= 0 && clickedItemSlot <= 2) {
+                // SUBTRACT BUTTONS
+                subtractFromShopItem(shopInventory, clickedItemSlot);
                 updateButtonTotalValues(shopInventory, playerInventory);
-            }
-        } else if(clickedItemSlot == 13) {
-            // SELL BUTTON
-            if(clickedItem.getType() == Material.BARRIER) {
-                interact.msgPlayer("You cannot sell this item", player);
-            } else {
-                sellItem(player, shopInventory);
+            } else if(clickedItemSlot >= 6 && clickedItemSlot <= 8) {
+                // ADD BUTTONS
+                addToShopItem(shopInventory, clickedItemSlot);
                 updateButtonTotalValues(shopInventory, playerInventory);
+            } else if(clickedItemSlot == 12) {
+                // BUY BUTTON
+                if(clickedItem.getType() == Material.BARRIER) {
+                    interact.msgPlayer("You cannot buy this item", player);
+                } else {
+                    buyItem(player, shopInventory);
+                    updateButtonTotalValues(shopInventory, playerInventory);
+                }
+            } else if(clickedItemSlot == 13) {
+                // SELL BUTTON
+                if(clickedItem.getType() == Material.BARRIER) {
+                    interact.msgPlayer("You cannot sell this item", player);
+                } else {
+                    sellItem(player, shopInventory);
+                    updateButtonTotalValues(shopInventory, playerInventory);
+                }
+            } else if(clickedItemSlot == 14) {
+                // SELL ALL BUTTON
+                if(clickedItem.getType() == Material.BARRIER) {
+                    interact.msgPlayer("You cannot sell this item.", player);
+                } else {
+                    sellAllItems(player, shopInventory);
+                    updateButtonTotalValues(shopInventory, playerInventory);
+                }
+            } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 18)) {
+                // BUY TOGGLE BUTTON
+                String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
+                boolean toggleValue = toggleBuyItems(shopInventory, signID, player);
+                if(toggleValue) {
+                    updateButtonTotalValues(shopInventory, playerInventory);
+                }
+            } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 19)) {
+                // SELL TOGGLE BUTTON
+                String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
+                boolean toggleValue = toggleSellItems(shopInventory, signID, player);
+                if(toggleValue) {
+                    updateButtonTotalValues(shopInventory, playerInventory);
+                }
+            } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 21)) {
+                // EDIT BUY PRICE BUTTON
+                String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
+                Global.shopConfig.initiateBuyPriceChangeProcess(signID, player);
+                player.closeInventory();
+            } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 22)) {
+                // EDIT SELL PRICE BUTTON
+                String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
+                Global.shopConfig.initiateSellPriceChangeProcess(signID, player);
+                player.closeInventory();
+            } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 23)) {
+                // EDIT DESC BUTTON
+                String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
+                Global.shopConfig.initiateDescChangeProcess(signID, player);
+                player.closeInventory();
             }
-        } else if(clickedItemSlot == 14) {
-            // SELL ALL BUTTON
-            if(clickedItem.getType() == Material.BARRIER) {
-                interact.msgPlayer("You cannot sell this item.", player);
-            } else {
-                sellAllItems(player, shopInventory);
-                updateButtonTotalValues(shopInventory, playerInventory);
-            }
-        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 18)) {
-            // BUY TOGGLE BUTTON
-            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
-            boolean toggleValue = toggleBuyItems(shopInventory, signID, player);
-            if(toggleValue) {
-                updateButtonTotalValues(shopInventory, playerInventory);
-            }
-
-        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 19)) {
-            // SELL TOGGLE BUTTON
-            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
-            boolean toggleValue = toggleSellItems(shopInventory, signID, player);
-            if(toggleValue) {
-                updateButtonTotalValues(shopInventory, playerInventory);
-            }
-        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 21)) {
-            // EDIT BUY PRICE BUTTON
-            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
-            Global.shopConfig.initiateBuyPriceChangeProcess(signID, player);
-            player.closeInventory();
-
-
-        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 22)) {
-            // EDIT SELL PRICE BUTTON
-            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
-            Global.shopConfig.initiateSellPriceChangeProcess(signID, player);
-            player.closeInventory();
-
-
-        } else if((Global.editModeEnabled.contains(player.getUniqueId())) && (clickedItemSlot == 23)) {
-            // EDIT DESC BUTTON
-            String signID = shopInventory.getItem(18).getItemMeta().getLocalizedName();
-            Global.shopConfig.initiateDescChangeProcess(signID, player);
-            player.closeInventory();
         }
     }
 
