@@ -72,8 +72,8 @@ public class MainConfig {
         // Shop settings
         getMainConfig().addDefault("settings.shop.signtitle", "§b[shop]");
         getMainConfig().addDefault("settings.shop.currencysymbol", "$");
-        getMainConfig().addDefault("settings.shop.buyprefix", "§2B");
-        getMainConfig().addDefault("settings.shop.sellprefix", "§4S");
+        getMainConfig().addDefault("settings.shop.buyprefix", "§4B");
+        getMainConfig().addDefault("settings.shop.sellprefix", "§2S");
         getMainConfig().addDefault("settings.shop.soldout", "§4Sold Out");
         getMainConfig().addDefault("settings.shop.guititle", "Buy {item}");
 

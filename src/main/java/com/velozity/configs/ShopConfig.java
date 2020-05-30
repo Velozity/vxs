@@ -75,7 +75,6 @@ public class ShopConfig {
             removeShop(signId);
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(Global.getMainInstance, () -> {
             shopsConfig.set("shops." + signId, shop.serialize());
             shopsConfig.options().copyDefaults(true);
             try {
@@ -84,7 +83,6 @@ public class ShopConfig {
             } catch (IOException | InvalidConfigurationException e) {
                 e.printStackTrace();
             }
-        });
     }
 
     public void removeShop(String signId) {
@@ -92,8 +90,6 @@ public class ShopConfig {
             Global.database.removeShop(signId);
             return;
         }
-
-        Bukkit.getScheduler().runTaskAsynchronously(Global.getMainInstance, () -> {
             try {
                 shopsConfig.load(shopsConfigFile);
                 shopsConfig.set("shops." + signId, null);
@@ -101,21 +97,13 @@ public class ShopConfig {
             } catch (IOException | InvalidConfigurationException e) {
                 e.printStackTrace();
             }
-        });
+
     }
 
     public Set<String> getSignIds() {
         if((Boolean) Global.mainConfig.readSetting("mysql", "enabled")) {
             return Global.database.getSignIds();
         }
-
-        Bukkit.getScheduler().runTaskAsynchronously(Global.getMainInstance, () -> {
-            try {
-                shopsConfig.load(shopsConfigFile);
-            } catch (IOException | InvalidConfigurationException e) {
-                e.printStackTrace();
-            }
-        });
 
         if (shopsConfig.saveToString().trim().equals("")) {
             return Collections.emptySet();
@@ -140,14 +128,6 @@ public class ShopConfig {
             return Global.database.getShop(signId);
         }
 
-        Bukkit.getScheduler().runTaskAsynchronously(Global.getMainInstance, () -> {
-            try {
-                shopsConfig.load(shopsConfigFile);
-            } catch (IOException | InvalidConfigurationException e) {
-                e.printStackTrace();
-            }
-        });
-
         Shop shop = new Shop();
         shop.title = shopsConfig.getConfigurationSection("shops." + signId).getString("title");
         shop.item = shopsConfig.getConfigurationSection("shops." + signId).getItemStack("item");
@@ -157,32 +137,6 @@ public class ShopConfig {
         shop.sellable = shopsConfig.getConfigurationSection("shops." + signId).getBoolean("sellable");
 
         return shop;
-    }
-
-    public Map<String, Shop> getShops() {
-        Bukkit.getScheduler().runTaskAsynchronously(Global.getMainInstance, () -> {
-            try {
-                shopsConfig.load(shopsConfigFile);
-            } catch (IOException | InvalidConfigurationException e) {
-                e.printStackTrace();
-            }
-        });
-
-        Map<String, Shop> shops = new LinkedHashMap<>();
-        for (String key : shopsConfig.getConfigurationSection("shops").getKeys(false)) {
-            Shop shop = new Shop();
-
-            shop.title = shopsConfig.getConfigurationSection("shops." + key).getString("title");
-            shop.buyprice = shopsConfig.getConfigurationSection("shops." + key).getInt("buyprice");
-            shop.sellprice = shopsConfig.getConfigurationSection("shops." + key).getInt("sellprice");
-            shop.buyable = shopsConfig.getConfigurationSection("shops." + key).getBoolean("buyable");
-            shop.sellable = shopsConfig.getConfigurationSection("shops." + key).getBoolean("sellable");
-            shop.item = shopsConfig.getConfigurationSection("shops." + key).getItemStack("item");
-
-            shops.put(key, shop);
-        }
-
-        return shops;
     }
 
     public void initiateDescChangeProcess(String signId, Player player) {
