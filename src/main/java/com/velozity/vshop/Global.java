@@ -30,13 +30,13 @@ public class Global {
     public static Chat chat = null;
     public static Metrics metrics = null;
 
-    public static final MainConfig mainConfig = new MainConfig();
-    public static final ShopConfig shopConfig = new ShopConfig();
-    public static final DatabaseHelper database = new DatabaseHelper();
-    public static final StatsWriter statsWriter = new StatsWriter();
-    public static final ShopGUI shopgui = new ShopGUI();
-    public static final Interactions interact = new Interactions();
-    public static final Parsers parser = new Parsers();
+    public static MainConfig mainConfig = new MainConfig();
+    public static ShopConfig shopConfig = new ShopConfig();
+    public static DatabaseHelper database = new DatabaseHelper();
+    public static StatsWriter statsWriter = new StatsWriter();
+    public static ShopGUI shopgui = new ShopGUI();
+    public static Interactions interact = new Interactions();
+    public static Parsers parser = new Parsers();
 
     public static List<Material> signTypes = Arrays.asList(
             Material.OAK_SIGN,
